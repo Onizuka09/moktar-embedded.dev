@@ -1,0 +1,10 @@
+[
+  {
+    "slug": "STM32_FromScratch",
+    "title": "How to get started with STM32 from scratch",
+    "date": "2024-09-27",
+    "summary": "A repo that set's up an environment from scratch for stm32F4 (Linker script, startup file, makefile, ....)",
+    "tags": ["stm32", "startup", "linkerfile", "c"],
+    "source": "https://raw.githubusercontent.com/Onizuka09/STM32_FromScratch/refs/heads/main/articles/Fromscratch.md"
+  }
+]

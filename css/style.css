@@ -1,0 +1,177 @@
+/* ===== Colors and fonts: change these first ===== */
+:root {
+  --bg: #fafaf8;
+  --text: #1c1f1e;
+  --muted: #5c6360;
+  --line: #dcdfdc;
+  --accent: #0b7a5b;      /* links, buttons */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+
+/* Dark mode: used automatically when the visitor's device is set to dark */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131615;
+    --text: #e8ebe9;
+    --muted: #9aa39f;
+    --line: #2b302e;
+    --accent: #3fc79c;
+  }
+}
+
+/* ===== Base ===== */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.6;
+}
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* One centered column, about 760px wide */
+main, .site-header, footer {
+  max-width: 760px;
+  margin: 0 auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+/* ===== Header ===== */
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+.logo { font-weight: 700; color: var(--text); text-decoration: none; }
+nav a { margin-left: 1.25rem; color: var(--muted); text-decoration: none; }
+nav a:hover { color: var(--accent); }
+
+/* ===== Sections ===== */
+section { padding: 2.5rem 0; border-top: 1px solid var(--line); }
+section.hero { border-top: none; padding-top: 2rem; }
+h1 { font-size: 2.1rem; line-height: 1.25; margin: 0 0 1rem; }
+h2 { font-size: 1.3rem; margin: 0 0 1.25rem; }
+.hero p { color: var(--muted); font-size: 1.1rem; max-width: 60ch; }
+
+/* ===== Buttons and link rows ===== */
+.buttons { display: flex; gap: .75rem; flex-wrap: wrap; }
+.button {
+  background: var(--accent);
+  color: var(--bg);
+  padding: .6rem 1.1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+}
+.button.secondary {
+  background: none;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+.links a { margin-right: 1.25rem; }
+
+/* ===== Project and post entries ===== */
+.list .item { padding: 0 0 .5rem 1rem; border-left: 3px solid var(--line); margin-bottom: 1.5rem; }
+.list .item:hover { border-left-color: var(--accent); }
+.item h3 { margin: 0 0 .25rem; font-size: 1.1rem; }
+.item p { margin: .25rem 0 .5rem; color: var(--muted); }
+.item .meta { font-size: .85rem; color: var(--muted); }
+.tags span {
+  font-family: var(--mono);
+  font-size: .8rem;
+  margin-right: .75rem;
+  color: var(--muted);
+}
+
+/* ===== Services and skills ===== */
+ul.plain { padding-left: 1.2rem; }
+ul.plain li { margin-bottom: .75rem; }
+.skills dt { font-weight: 600; margin-top: .75rem; }
+.skills dd { margin: 0; color: var(--muted); }
+
+footer { padding-top: 2rem; padding-bottom: 3rem; color: var(--muted); font-size: .9rem; }
+
+@media (max-width: 520px) {
+  h1 { font-size: 1.6rem; }
+  nav a { margin-left: .9rem; }
+}
+
+/* ===== Added: pages, timeline, markdown ===== */
+nav a.active { color: var(--text); font-weight: 600; }
+main > h1 { margin-top: 1rem; }
+.intro { color: var(--muted); margin-bottom: 2rem; }
+main > article > .meta { color: var(--muted); margin-bottom: 1.5rem; }
+main > article > .meta a { margin-right: 1rem; }
+
+.timeline { list-style: none; padding: 0; margin: 0; }
+.timeline li { margin-bottom: 1.25rem; }
+.timeline p { margin: .25rem 0 0; color: var(--muted); }
+.timeline .meta { color: var(--muted); font-size: .9rem; margin-left: .5rem; }
+
+/* Rendered markdown (posts and READMEs) */
+.prose { overflow-wrap: break-word; }
+.prose h1, .prose h2, .prose h3 { margin: 2rem 0 .75rem; line-height: 1.3; }
+.prose h1 { font-size: 1.5rem; }
+.prose img { max-width: 100%; height: auto; }
+.prose pre { overflow-x: auto; padding: 1rem; border: 1px solid var(--line); border-radius: 6px; font-size: .9rem; }
+.prose code { font-family: var(--mono); font-size: .9em; }
+.prose :not(pre) > code { background: var(--line); padding: .1em .35em; border-radius: 4px; }
+.prose pre code { background: none; padding: 0; }
+.prose table { border-collapse: collapse; display: block; overflow-x: auto; }
+.prose th, .prose td { border: 1px solid var(--line); padding: .4rem .7rem; }
+.prose blockquote { margin-left: 0; padding-left: 1rem; border-left: 3px solid var(--line); color: var(--muted); }
+
+/* Experience entries */
+.timeline > li { margin-bottom: 2rem; }
+.timeline .role { display: flex; justify-content: space-between; gap: .25rem 1rem; flex-wrap: wrap; }
+.timeline .role .meta { margin-left: 0; white-space: nowrap; }
+.timeline .company { color: var(--muted); }
+.timeline ul { list-style: disc; padding-left: 1.2rem; margin: .5rem 0; }
+.timeline li li { margin-bottom: .35rem; }
+.timeline .tags { margin-top: .5rem; }
+
+/* ===== Sidebar layout (home page only) ===== */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* The home page is wider to make room for the sidebar */
+.wide .site-header, .wide footer, .layout { max-width: 980px; margin: 0 auto; }
+.layout {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 3rem;
+  padding: 0 1.25rem;
+}
+.layout main { max-width: none; margin: 0; padding: 0; min-width: 0; }
+section { scroll-margin-top: 1rem; }
+
+.sidebar { position: sticky; top: 1.5rem; align-self: start; padding-top: 2rem; }
+.sidebar nav { display: flex; flex-direction: column; }
+.sidebar a {
+  padding: .35rem 0 .35rem .85rem;
+  border-left: 2px solid var(--line);
+  color: var(--muted);
+  text-decoration: none;
+}
+.sidebar a:hover { color: var(--text); }
+.sidebar a.active { border-left-color: var(--accent); color: var(--text); font-weight: 600; }
+
+/* Phones and small windows: sidebar becomes a bar across the top */
+@media (max-width: 800px) {
+  .layout { display: block; }
+  .sidebar {
+    top: 0; z-index: 5; padding: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    margin: 0 -1.25rem; padding: 0 1.25rem;
+  }
+  .sidebar nav { flex-direction: row; gap: 1.25rem; overflow-x: auto; padding: .7rem 0; }
+  .sidebar a { white-space: nowrap; border-left: none; padding: 0; }
+  section { scroll-margin-top: 4rem; }
+}
