@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://Onizuka09.github.io/portfolio/sitemap.xml
+Sitemap: https://onizuka09.github.io/moktar-embedded.dev/sitemap.xml
