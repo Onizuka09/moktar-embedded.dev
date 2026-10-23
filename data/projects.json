@@ -14,5 +14,84 @@
     "tags": ["stm32", "Robotics", "Navigation","Odometry","PID"],
     "date": "2026-01-26"
   
+  },
+  {
+    "repo": "Onizuka09/DagDeg_autonomous",
+    "title": "DagDeg_autonomous",
+    "description": "ROS2 Stack for autonomous robot.",
+    "tags": ["ROS2", "OpenCV", "Navigation","RPI4","PID"],
+    "date": "2026-02-16"
+  
+  },
+  {
+    "repo": "Onizuka09/Zetta-Protocolotocol",
+    "title": "Zetta-Protocol",
+    "description": "lightweight, transport-agnostic packet protocol designed for embedded systems.",
+    "tags": ["C", "embeddedSystems", "Protocol"],
+    "date": "2026-02-16"
+  
+  },
+  {
+    "repo": "Onizuka09/Zetta-Protocolotocol",
+    "title": "Zetta-Protocol",
+    "description": "lightweight, transport-agnostic packet protocol designed for embedded systems.",
+    "tags": ["C", "embeddedSystems", "Protocol"],
+    "date": "2026-01-16"
+  },
+  {
+    "repo": "Onizuka09/smart-Plug",
+    "title": "smart-Plug",
+    "description": "An IoT solution to control a group of plugs that communicates with the gateway over ESP-NOW and a dashboard as a UI.",
+    "tags": ["C++", "ESP-NOW", "ESP32"],
+    "date": "2026-04-24"
+  },
+  {
+    "repo": "Onizuka09/schedular_semulator",
+    "title": "schedular_semulator",
+    "description": "This is a university project about creating C application that simulates the execution of multiple processes using different scheduling algorithms ( RR,FIFO ...)",
+    "tags": ["C", "scheduling"],
+    "date": "2023-12-10"
+  },
+  {
+    "repo": "Onizuka09/Projet-UNIX",
+    "title": "Projet-UNIX",
+    "description": "A unix sockets project.",
+    "tags": ["C", "linux-system-programming"],
+    "date": "2025-1-25"
+  },
+    {
+    "repo": "Onizuka09/MoodLamp",
+    "title": "MoodLamp",
+    "description": "A mood lamp led using ESP and a strip led",
+    "tags": ["C++", "LVGL","ESP32" ],
+    "date": "2023-8-11"
+  },
+   {
+    "repo": "Onizuka09/Matter-controller",
+    "title": "Matter-controller",
+    "description": "a GUI wrapper of the CHIP-TOOL command",
+    "tags": ["C++", "QT","Matter" ],
+    "date": "2024-9-22"
+  },
+  {
+    "repo": "Onizuka09/FoxyBootLoader",
+    "title": "FoxyBootLoader",
+    "description": "minimal stm32 bootloader",
+    "tags": ["C", "Bootloader","STM32" ],
+    "date": "2024-11-15"
+  },
+  {
+    "repo": "Onizuka09/emotionDetection_server",
+    "title": "emotionDetection_server",
+    "description": "realtime server that streams video using falsk and incorporates facedetection and emotion detection",
+    "tags": ["OpenCV", "Flask","RPI","computer-vision","PyCAM","Firebase" ],
+    "date": "2024-9-24"
+  },
+    {
+    "repo": "Onizuka09/DagDeg",
+    "title": "DagDeg",
+    "description": "Line Follower Robot using ESP32 for ENSI ROBOTCup 2024 competition",
+    "tags": ["C++", "ESP32","PID"],
+    "date": "2024-11-19"
   }
 ]
