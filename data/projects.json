@@ -24,19 +24,12 @@
   
   },
   {
-    "repo": "Onizuka09/Zetta-Protocolotocol",
+    "repo": "Onizuka09/Zetta-Protocol",
     "title": "Zetta-Protocol",
     "description": "lightweight, transport-agnostic packet protocol designed for embedded systems.",
     "tags": ["C", "embeddedSystems", "Protocol"],
     "date": "2026-02-16"
   
-  },
-  {
-    "repo": "Onizuka09/Zetta-Protocolotocol",
-    "title": "Zetta-Protocol",
-    "description": "lightweight, transport-agnostic packet protocol designed for embedded systems.",
-    "tags": ["C", "embeddedSystems", "Protocol"],
-    "date": "2026-01-16"
   },
   {
     "repo": "Onizuka09/smart-Plug",

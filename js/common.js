@@ -77,9 +77,9 @@ async function fillFromGitHub(projects) {
 
 function projectHTML(p) {
   const tags = (p.tags || []).map(t => `<span>${esc(t)}</span>`).join("");
-  const links = [`<a href="project.html?repo=${encodeURIComponent(p.repo)}">Read more</a>`,
+  const links = [`<a href="projects/${esc(p.repo.split("/")[1])}/">Read more</a>`,
                  `<a href="https://github.com/${esc(p.repo)}">Code</a>`];
-  if (p.post) links.push(`<a href="post.html?slug=${esc(p.post)}">Blog post</a>`);
+  if (p.post) links.push(`<a href="blog/${esc(p.post)}/">Blog post</a>`);
   if (p.demo) links.push(`<a href="${esc(p.demo)}">Demo</a>`);
   return `<article class="item">
     <h3>${esc(p.title)}</h3>
@@ -88,11 +88,10 @@ function projectHTML(p) {
     <div class="links">${links.join("")}</div></article>`;
 }
 
-// ---------- Posts ----------
 function postHTML(p) {
   const tags = (p.tags || []).map(t => `<span>${esc(t)}</span>`).join("");
   return `<article class="item">
-    <h3><a href="post.html?slug=${esc(p.slug)}">${esc(p.title)}</a></h3>
+    <h3><a href="blog/${esc(p.slug)}/">${esc(p.title)}</a></h3>
     <div class="meta">${esc(p.date)}</div>
     <p>${esc(p.summary)}</p>
     <div class="tags">${tags}</div></article>`;
