@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel>
+  <title>Moktar SELLAMI – Blog</title>
+  <link>https://onizuka09.github.io/moktar-embedded.dev.html</link>
+  <description>Embedded systems engineer: firmware, embedded security, robotics and embedded Linux.</description>
+  <item>
+    <title>How to get started with STM32 from scratch</title>
+    <link>https://onizuka09.github.io/moktar-embedded.dev/STM32_FromScratch/</link>
+    <guid>https://onizuka09.github.io/moktar-embedded.devg/STM32_FromScratch/</guid>
+    <pubDate>Fri, 27 Sep 2024 00:00:00 GMT</pubDate>
+    <description>A repo that set's up an environment from scratch for stm32F4 (Linker script, startup file, makefile, ....)</description>
+  </item>
+</channel></rss>

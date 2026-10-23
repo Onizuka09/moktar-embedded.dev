@@ -12,7 +12,7 @@ const hljs = require("highlight.js");
 
 // ===== Edit these (keep name/github in sync with js/common.js) =====
 const CONFIG = {
-  siteUrl: "https://Onizuka09.github.io/portfolio",   // no trailing slash
+  siteUrl: "https://onizuka09.github.io/moktar-embedded.dev",   // no trailing slash
   name: "Moktar SELLAMI",
   github: "Onizuka09",
   description: "Embedded systems engineer: firmware, embedded security, robotics and embedded Linux."

@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to get started with STM32 from scratch – Moktar SELLAMI</title>
+  <meta name="description" content="A repo that set's up an environment from scratch for stm32F4 (Linker script, startup file, makefile, ....)">
+  <link rel="canonical" href="https://Onizuka09.github.io/portfolio/blog/STM32_FromScratch/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="How to get started with STM32 from scratch">
+  <meta property="og:description" content="A repo that set's up an environment from scratch for stm32F4 (Linker script, startup file, makefile, ....)">
+  <meta property="og:url" content="https://Onizuka09.github.io/portfolio/blog/STM32_FromScratch/">
+  <meta property="og:site_name" content="Moktar SELLAMI">
+  <meta name="twitter:card" content="summary">
+  <link rel="alternate" type="application/rss+xml" title="Moktar SELLAMI – Blog" href="../../feed.xml">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to get started with STM32 from scratch","description":"A repo that set's up an environment from scratch for stm32F4 (Linker script, startup file, makefile, ....)","datePublished":"2024-09-27","author":{"@type":"Person","name":"Moktar SELLAMI"},"mainEntityOfPage":"https://Onizuka09.github.io/portfolio/blog/STM32_FromScratch/"}</script>
+</head>
+<body class="wide">
+<header class="site-header"><a class="logo" href="../../index.html">Moktar SELLAMI</a><nav><a href="../../index.html">Portfolio</a><a href="../../projects.html">Projects</a><a href="../../blog.html" class="active">Blog</a><a href="../../index.html#contact">Contact</a></nav></header>
+<div class="layout">
+<aside class="sidebar"><nav id="side-nav" aria-label="On this page">
+<a href="#table-of-contents" class="sub">Table of Contents</a>
+<a href="#an-ide-vs-code-editor" class="sub">An IDE VS Code Editor</a>
+<a href="#embedded-system-code-structure" class="sub">Embedded system code structure</a>
+<a href="#elf-file" class="sub">Elf file</a>
+<a href="#tool-chains" class="sub">Tool-Chains</a>
+<a href="#conclusion">conclusion</a>
+</nav></aside>
+<main>
+<article>
+  <h1>How to get started with STM32 from scratch</h1>
+  <div class="meta">2024-09-27</div>
+  <div class="tags"><span>stm32</span><span>startup</span><span>linkerfile</span><span>c</span></div>
+  <div class="prose"><p>Have you ever wondered when you are woking on an Arduino project how does everything works, why sometimes it takes so long to flash or compile the code..., Or when you work an ST project on the CUBE-IDE and you hit run or Debug what is happening on the backend, Or you are just fed up with using a bloated IDE<br></p>
+<p>well, let&#39;s figure out to program an STM32 and set up its environment from scratch.<br> </p>
+<p>I am using a <code>STM32F4RET6-NUCLEO</code> board, it has a CORTEX-M4 micro-processor and 00 FLASH and 00 SRAM.<br>
+This article will explore how to set up a development environment from scratch, starting with a bare <code>main.c</code> file as our main application (a blinky sketch).<br>
+A development should contains these elements : <br></p>
+<ul>
+<li><code>code editor</code>: a piece of software to write your code.<br> </li>
+<li><code>toolchain</code> : tools needed to compile, assemble ...<br>
+-<code>Startup file</code>: describes the Request handler that the MCU calls when an IT happens, describes the VT and implements the <code>Reset_handler</code>.<br></li>
+<li><code>linker script</code>:  describes you memory layout and how to set up different sections<br>
+In this article i will focus how to setup an Development environment from scratch without the need of an IDE.<br></li>
+</ul>
+<p>I will assume that you are using <code>ubuntu</code> as your operating system.<br> </p>
+<h3 id="table-of-contents">Table of Contents</h3>
+<ul>
+<li><a href="#article-1-development-environment-from-scratch-for-an-stm32">Article 1: Development Environment from Scratch for an STM32</a><ul>
+<li><a href="#an-ide-vs-code-editor">An IDE VS Code Editor</a></li>
+<li><a href="#embedded-system-code-structure">Embedded System Code Structure</a><ul>
+<li><a href="#linker-script">Linker Script</a><ul>
+<li><a href="#1--first-lets-understand-the-memory-architecture-of-an-embedded-system">1- First Let&#39;s Understand the Memory Architecture of an Embedded System</a><ul>
+<li><a href="#the-anatomy-of-flash-and-sram">The Anatomy of <code>Flash</code> and <code>SRAM</code></a></li>
+<li><a href="#other-memory-regions">Other Memory Regions</a></li>
+</ul>
+</li>
+<li><a href="#2--the-memory-mapping-in-st">2- The Memory Mapping in ST</a></li>
+<li><a href="#3--linker-and-linker-script">3- Linker and Linker Script</a></li>
+<li><a href="#4--how-to-write-a-linker-script">4- How to Write a Linker Script</a><ul>
+<li><a href="#entry">ENTRY()</a></li>
+<li><a href="#memory-section">MEMORY Section</a></li>
+<li><a href="#sections">SECTIONS{}</a></li>
+</ul>
+</li>
+<li><a href="#5--how-to-compile-a-linker-script">5- How to Compile a Linker Script</a></li>
+<li><a href="#6--linker-script-summery">6- Linker script summery</a></li>
+</ul>
+</li>
+<li><a href="#startup-file">Startup File</a><ul>
+<li><a href="#1--general-overview-of-interrupts">1- General Overview of Interrupts</a></li>
+<li><a href="#2--vector-tables">2- Vector Tables</a></li>
+<li><a href="#3--what-is-the-reset_handler">3- What is the Reset_Handler</a></li>
+<li><a href="#4--what-happens-at-boot-time">4- What Happens at Boot Time</a></li>
+<li><a href="#5--lets-write-a-startup-file">5- Let&#39;s Write a Startup File</a><ul>
+<li><a href="#defining-the-vt">Defining the VT</a></li>
+<li><a href="#defining-the-handlers">Defining the Handlers</a></li>
+<li><a href="#populating-the-vt">Populating the VT</a></li>
+<li><a href="#implementing-the-reset_handler">Implementing the Reset_Handler</a></li>
+</ul>
+</li>
+<li><a href="#6--startup-file-summery">6- startup file summery</a></li>
+</ul>
+</li>
+<li><a href="#elf-file">Elf File</a></li>
+</ul>
+</li>
+<li><a href="#tool-chains">Tool-Chains</a><ul>
+<li><a href="#1--arm-gcc">arm-gcc</a><ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#usage">Usage</a></li>
+</ul>
+</li>
+<li><a href="#2--build-system-make">Build System (make)</a></li>
+<li><a href="#3--libraries">Libraries</a></li>
+<li><a href="#4--flashing">Flashing</a></li>
+<li><a href="#5--debugging">Debugging</a></li>
+<li><a href="#6--emulators">Emulators</a></li>
+</ul>
+</li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+<h3 id="an-ide-vs-code-editor">An IDE VS Code Editor</h3>
+<p>#todo</p>
+<h3 id="embedded-system-code-structure">Embedded system code structure</h3>
+<p>if you worked on the STM32-Cube IDE, you would find this structure :</p>
+<ul>
+<li><code>Src dir</code>: contains all the source files <code>.c</code> (<code>main.c</code>)<br> </li>
+<li><code>Includes dir</code>: contains all the headers <code>.h</code><br></li>
+<li><code>Debug dir</code>: contains the build output  <br></li>
+<li><code>Startup dir</code>: contains the start up file <br></li>
+<li><code>.ld</code> file extension: linker script <br></li>
+</ul>
+<p>#todo: insert image</p>
+<p>There are other directories like <code>driver</code> and <code>core</code>, i am not going to focus on them for the moment.<br>
+i have already created the simple main.c file: a blinky application ( we will explore it later ).<br></p>
+<p>Now How to create a <code>linker script</code> and a <code>startup file</code> for an embedded target.</p>
+<h4 id="linker-script">linker script</h4>
+<p>The linker script is a piece of code that describes the memory layout of your project
+It describes the physical memory size (Flash and SRAM), also it describes the sections present in your code.<br></p>
+<h5 id="1--first-lets-understand-the-memory-architecture-of-an-embedded-system">1- First let&#39;s understand the memory architecture of an embedded system</h5>
+<ul>
+<li><code>Flash</code>       :   this memory contains the binary code you uploaded and it&#39;s going to run (volatile). </li>
+<li><code>SRAM</code>        :   this is the ram that would hold your data at runtime (non-volatile)</li>
+</ul>
+<h6 id="the-anatomy-of-flash-and-sram"><strong>The anatomy of <code>flash</code> and <code>SRAM</code></strong></h6>
+<ul>
+<li>Let&#39;s first start with flash:<br></li>
+</ul>
+<p>As said before the <code>flash</code> holds the application binary code, it is divided into sections: </p>
+<pre><code class="hljs">- `.text` section   : contains the application code. 
+- `.data` section   : contains the (global/static) initialized data 
+- `.rodata` section : contains the constant data. 
+- `.bss` section    : contains the (global/static) uninitialized data. </code></pre>
+<ul>
+<li>The <code>SRAM</code> (static memory):<br></li>
+</ul>
+<p>The <code>SRAM</code> holds the data at runtime: </p>
+<pre><code class="hljs">- `.data` section   : same as the `flash`, the `.data` of the `flash` are copied to `.data` section of `SRAM` at boot-time.   
+- `.bss` section    : same as the `flash`, the `.bss` of the `flash` are copied and initialized to `0` to `.bss` section of `SRAM` at boot-time.   
+- `stack` section   : contains the local data that are statically allocated and function calls at runtime. 
+- `heap` section    : contains dynamic allocated memory regions, at runtime. </code></pre>
+<h6 id="other-memory-regions"><strong>Other memory regions</strong></h6>
+<ul>
+<li><code>Peripherals</code>   :   a memory area, describes where the MCU peripherals are mapped, it is used to control the peripherals through registers.   <!--- TODO: Look and understand more about the other types of memory in Embedded systems ---></li>
+</ul>
+<h5 id="2--the-memory-mapping-in-st">2- The memory mapping in ST</h5>
+<p>In a PC you have in the mother-board, CPU, DISK and MEMORY stick, each one in dedicated area and connected through each other via buses.<br>
+In an STM32 (STM32F4) there is a <code>4Gb</code> of addressable memory space, this memory area is divided into sections, each section has a defined boundary address space (start and end), these sections represents the different memory component of an embedded target.<br> 
+This space is not a physical memory block but rather a way of organizing how different types of physical memory and peripherals are accessed by the processor.<br>
+This information is present in the <code>Memory mapping section in the DATASHEET</code>. </p>
+<p>TODO: Insert Picture <br></p>
+<p>This means to access <code>SRAM</code> or <code>FLASH</code>, they are mapped to a specific location in this memory space.<br> 
+These mappings are not standard and changes from MCU to MCU, for that we need to specify the <code>location</code> of each region, it&#39;s <code>size</code> and it&#39;s <code>contents</code> (<code>sections</code>).<br></p>
+<p>This is where the <code>linker</code> comes into play. </p>
+<h5 id="3--linker-and-linker-script">3- linker and linker script</h5>
+<p>The <code>linker</code> is responsible for assigning memory addresses to <code>.text</code> and <code>.data</code> sections of a program, ensuring that they are correctly placed in the appropriate memory regions as defined by the microcontroller’s (MCU&#39;s) memory map. This process is guided by a <code>linker script</code>.</p>
+<p>A <code>linker script</code> is a text file that details how different sections of an <code>object file</code> should be combined to create the final output file. It specifies unique absolute addresses for these sections based on the address information provided within the script.</p>
+<p>Key aspects of a linker script include:</p>
+<ul>
+<li>Memory Layout             :   Describes how memory is organized and assigns addresses to different sections.</li>
+<li>Code and Data Addresses   :   Defines where code and data should be placed in memory and their sizes.</li>
+</ul>
+<p><code>Linker scripts</code> are written using GNU linker command language and have the <code>.ld</code> file extension.</p>
+<p>During the linking phase, you must supply the linker script to the linker using the <code>-T</code> option.
+The linker performs additional roles, which will be discussed later.</p>
+<h5 id="4--how-to-write-a-linker-script">4- How to write a linker script</h5>
+<p>writing a linker script is very easy. </p>
+<ul>
+<li>This is a basic template how a linker script should appear.</li>
+</ul>
+<pre><code class="hljs">ENTRY (_symbol_name_)
+
+MEMORY {
+memory-name (att) :ORIGIN = adr,LENGTH = size
+}
+SECTIONS {
+    .section_name:{
+     *(.section_name)     
+    }&gt;(VMA) AT&gt; (LMA)
+}</code></pre>
+<h6 id="entry"><strong>ENTRY()</strong></h6>
+<p>This command sets the <code>entry-point address</code> information in the header <code>.elf</code> file (final executable) to <code>_symbol_name_</code>.<br>
+Usually the <code>_symbol_name_</code> refers to the first function to be executed by the CPU, in ST this function is called <code>Reset_Handler</code>.<br></p>
+<ul>
+<li>let&#39;s replace the <code>ENTRY</code> function with our suitable Handler:</li>
+</ul>
+<pre><code class="hljs">ENTRY(Reset_Handler)</code></pre>
+<h6 id="memory-section"><strong>MEMORY section</strong></h6>
+<p>This command allows you to describe the different <code>memories</code> present in the target and their <code>start address</code> and <code>size information</code>.<br>
+This information also helps the <code>linker</code> to calculate total code and memory consumed so far and throw error if data, code, heap or stack areas cannot fit into the available sizes<br></p>
+<pre><code class="hljs">memory-name (perm) :ORIGIN = adr,LENGTH = size</code></pre>
+<ul>
+<li><p><code>memory-name</code> :   defines a name of the memory region which will be later referenced by other parts of the <code>linker script</code>.</p>
+</li>
+<li><p><code>adr</code>         :   defines origin address, start of the memory region</p>
+</li>
+<li><p><code>size</code>        :   defines length of information </p>
+</li>
+<li><p><code>att</code>         :   defines the attribute list of the memory region (actions performed Read/write access ...). </p>
+</li>
+<li><p>Let&#39;s write the <code>MEMORY</code> command based on the <code>STM32F4RET6</code>:<br> 
+This board has: </p>
+</li>
+<li><p>512K of <code>Flash</code></p>
+</li>
+<li><p>96K of <code>SRAM</code></p>
+</li>
+</ul>
+<p>if you have other <code>SRAM</code> regions you can merge them together or declare them separately. </p>
+<pre><code class="hljs">MEMORY{
+  FLASH (rx) :ORIGIN =0x08000000,LENGTH =512K
+  SRAM (rwx) :ORIGIN =0x20000000,LENGTH =96K 
+}</code></pre>
+<ul>
+<li><code>RX</code>: in flash means that, its a Read only memory region and contains executable code. </li>
+<li><code>W</code>: means its readable and writable. 
+this ensures that code resides in a protected memory region and that data can be modified as needed.</li>
+</ul>
+<h6 id="sections"><strong>SECTIONS{}</strong></h6>
+<p>This section is responsible for creating the output sections present in the final executable. by merging all of the input section.<br>
+lets say we have <code>.c</code> file, let&#39;s compile it using <code>-c</code> to obtain <code>.o</code> file representing the binary format. </p>
+<pre><code class="hljs language-bash">gcc -c main.c  -o main.o </code></pre>
+<p>Notice here, we did not command the <code>gcc</code> to <code>link</code>, we just <code>compiled</code> and <code>translated</code> the <code>.c</code> file into <code>binary</code> format.<br></p>
+<blockquote>
+<p>we will explore this in a later chapter. </p>
+</blockquote>
+<p>Imagine now we have multiple <code>.o</code> files. Each <code>binary</code> file has section like <code>.text</code>, <code>.data</code>. <br>
+In the <code>SECTIONS</code> we telling the linker to combine all of the <code>.text</code> section together, etc.. <br></p>
+<pre><code class="hljs">SECTIONS{
+/* here we are instructing the linker to merge all the .text in a section  called .text*/
+    .text{ 
+        *(.text)
+        /* onther way is to specify the the files we want to get the .text section from */
+        main.o file1.o // ...    
+    }
+}</code></pre>
+<p>we can do that for all the other sections.<br></p>
+<pre><code class="hljs">SECTIONS
+{
+.text : {
+    *(.text) 
+    *(.rodata)	
+}
+.data : {
+    *(.data)
+}
+.bss : {
+    *(.bss)
+    }
+}</code></pre>
+<blockquote>
+<p>Note
+i just added the <code>.rodata</code> under the <code>.text</code> sections </p>
+</blockquote>
+<p>We can control also the oder the section in the final <code>elf</code> (who shows up first), this is important, will see that later. </p>
+<ul>
+<li>now how to control the placement of a section in a memory region, for example set the <code>.text</code> section to be in  FLASH memory region ?<br>
+we can do that using keywords:<br> 
+<code>VMA</code> :virtual memory address (static memory), it could be another <code>SRAM</code> you defined (<code>SRAM</code>, <code>SRAM2</code>).<br>
+<code>LMA</code>: load memory address  (physical memory), <code>FLASH</code> or an external Flash memory <br>
+<code>AT</code> command. <br>
+using these variations, we can instruct the linker where to put the different sections, (<code>FLASH</code>, <code>SRAM</code>, <code>EXternal FLASH</code>) it depends on your application.<br></li>
+</ul>
+<p><strong>- To instruct the linker to put the section in <code>LMA</code></strong></p>
+<pre><code class="hljs">.section_name{
+
+}&gt;  FLASH</code></pre>
+<p><strong>- To instruct the linker relocate the section in from <code>LMA</code> to <code>VMA</code></strong></p>
+<pre><code class="hljs">.section_name{
+
+}&gt; SRAM AT&gt;  FLASH</code></pre>
+<p><strong>- To instruct the linker to put the section in <code>VMA</code></strong></p>
+<pre><code class="hljs">.section_name{
+
+}&gt;  SRAM</code></pre>
+<p>we obtain this code now: </p>
+<pre><code class="hljs">SECTIONS 
+{
+  /* text section */ 
+  .text : {
+    *(.text)
+    *(.rodata)
+  }&gt;FLASH
+  /*  data section  */   
+  .data : {
+    *(.data)
+  }&gt; SRAM AT&gt; FLASH
+  /* uninitialized data */ 
+  .bss : {
+  *(.bss) 
+  }&gt; SRAM
+}</code></pre>
+<p>in linker script there are other utilities we need in the next section used in the <code>SECTIONS</code></p>
+<ul>
+<li><strong><code>.</code> (dot) operator</strong>:</li>
+</ul>
+<p>the <code>.</code> operator is counter that keeps record of used memory.<br> 
+for example we can measure the end of the <code>.text</code> section </p>
+<pre><code class="hljs">.text{ 
+/* specifies the beginning of the address */ 
+    . ;
+    *(.text) 
+    *(.rodata)
+/* store the end of .text section in the symbol end_of_text */
+    end_of_text = . ;
+}</code></pre>
+<ul>
+<li><strong>ALIGN(4):</strong>
+this command ensures that memory region is a aligned by <code>4</code> bytes.<br>
+the memory address values is mutiple of <code>4</code> (<code>0x08000000</code>,<code>0x08000004</code>, <code>0x08000008</code>).<br> 
+Why aligning an address.<br>
+The CPU (<code>CORTEX-M4</code>)32 bit register, meaning the processor access the memory in chunks of <code>4</code> bytes, when data is <code>ALIGN(4)</code> the CPU can fetch the data in one memory cycle, increasing efficiency.<br> 
+lest&#39;s take <code>end_of_text</code> is a variable containing the end text data region address. that address coud be <code>0x08000082</code>(not aligned).<br>
+If the next section, say <code>.data</code>, starts immediately at <code>0x08000083</code>, this would create an <code>alignment issue</code>. Since <code>0x08000083</code> is not a multiple of <code>4</code>, the CPU would need extra steps to access the data efficiently, leading to performance degradation</li>
+</ul>
+<pre><code class="hljs">.text{ 
+/* specifies the beginning of the address */ 
+    . ;
+    *(.text) 
+    *(.rodata)
+/* store the end of .text section in the symbol end_of_text */
+    . = ALIGN(4) ;
+    end_of_text = . ;
+}</code></pre>
+<h5 id="5--how-to-compile-a-linker-script">5- How to compile a linker script:</h5>
+<pre><code class="hljs language-bash">arm-none-gcc -nostdlib -T stm32_ls.ld *.o -o prog.elf</code></pre>
+<ul>
+<li><code>-nostdlib</code>: specifies that we are not using the <code>glibc</code> the C standard libary. ( gcc by default assumes you are using <code>libc</code> )</li>
+<li><code>-Map</code>: creates a file with a detailed overview of the memory layout, including the sizes and locations of all sections and symbols.</li>
+</ul>
+<h5 id="6--linker-script-summery">6- Linker script summery</h5>
+<p>the <code>linker script</code> is an essential file to describe how you want to control your memory.
+In the next Section we will see what is <code>start up</code> file and how to write one. </p>
+<h4 id="startup-file">startup file</h4>
+<p>You have come up this far, Nice !!! <br>
+so the million question, what is a <code>startup file</code>.<br>
+A start up file is a piece of code that implements the <code>request handlers</code> (don&#39;t worry wil see that later), launches the <code>Reset_Handler</code> and describes the <code>vector table</code> (<code>VT</code>). <br>
+One key component to remember is that the <code>startup file</code> is the one that calls the <code>main</code>.<br>
+You might find an implementation of the <code>startup file</code> written in <code>Assembly</code> (yeah you read that right <code>ASSEMBLY</code>), but this time we are going to take things easily and write it in <code>C</code>.<br>
+this was a general overview about the <code>startup</code> file. Now let&#39;s dive in: </p>
+<h5 id="1--general-overview-of-interrupts">1- General overview of Interrupts</h5>
+<p>When working with embedded targets like the STM32 microcontroller, we heavily rely on interrupts. Interrupts are a crucial mechanism that allows the microcontroller to <code>pause</code> the current execution flow to handle <code>higher-priority tasks</code> (will see in a later section how interrupts works).</p>
+<p>These interrupts can take various forms:</p>
+<ul>
+<li>Exceptions (System Level): Such as a division by zero error.</li>
+<li>External Interrupts: Like a button press.</li>
+<li>Non-Maskable Interrupts (NMI): An interrupt that cannot be disabled.<br></li>
+</ul>
+<p>When an interrupt occurs, the microcontroller executes a specific task associated with it, known as a <code>Handler</code>. Each interrupt has a corresponding handler, such as <code>EXTI0_IRQHandler</code>(External interrupt), and these handlers are unique—meaning each interrupt can only have one associated <code>handler</code>.</p>
+<p>Interrupts are specific to the microcontroller&#39;s architecture, meaning you cannot create your own interrupts or assign interrupts to peripherals arbitrarily. Each interrupt is assigned a priority, which is typically documented in the manufacturer&#39;s reference manual.</p>
+<p>For example, in the <code>STM32F4</code> series micro-controllers, the reference manual provides detailed information about the available interrupts and their priorities. This information is presented in what is known as the <code>Vector Table</code> (VT).</p>
+<h5 id="2--vector-tables">2- Vector tables</h5>
+<p>The <code>Vector Table</code> is a critical component of the micro-controller&#39;s architecture. It is essentially a table of pointers that point to the <code>start addresses</code> of the <code>interrupt handlers</code>. When an interrupt occurs, the microcontroller looks up the corresponding address in the <code>Vector Table</code> and jumps to that address to execute the <code>handler</code>.</p>
+<p>Here&#39;s an example from the <code>STM32F4RE</code> reference manual, where you can see the <code>Vector Table layout</code>:</p>
+<p>(Insert image here)</p>
+<p>The <code>Vector Table</code> is located at the beginning of the microcontroller&#39;s memory map(<code>FLASH</code>), <strong>starting from address <code>0x00000000</code></strong>.<br>
+Usually the first entry in the table is the initial <code>stack pointer</code>, in other MCU&#39;s you might find that spot as <code>reserved</code>, followed by the <code>Reset_Handler</code> address, which points to the start of the <code>Reset_Handler</code>. After that, each entry corresponds to a specific interrupt or exception handler.</p>
+<h5 id="3--what-is-the-reset_handler">3- what is the Reset_Handler</h5>
+<p>the Reset handler is the first function that the CPU will execute, it performs certain actions: </p>
+<p>1- copy the <code>.data</code> sections from <code>Flash</code> memory to <code>SRAM</code> memory.<br>
+2- initializes the <code>.bss</code> section in <code>SRAM</code> to <code>0</code><br>
+3- call the <code>main</code> function</p>
+<p>To understand better what is happening here, let&#39;s understand the boot up proceeder.</p>
+<h5 id="4--what-happens-at-boot-time">4- What happens at boot time:</h5>
+<p>When the CPU (specifically the Cortex-M4) starts up, it uses a register called the Program Counter (PC), which always holds the address of the next instruction to be executed by the CPU.</p>
+<insert image>
+
+<p>At boot time, the <code>PC</code> is <code>initialized</code> with the value stored at address <code>0x00000004</code>. However, before this happens, the <code>Cortex-M4</code> first <code>loads</code> the value from <code>address 0x00000000</code> into the <code>Stack Pointer</code> (SP). The address <code>0x00000000</code> (where the <code>VT</code> is stored) contains the initial <code>SP</code> value, which the CPU uses to set up the stack.</p>
+<blockquote>
+<p>Note:
+i mentioned before that sometimes the first element of the VT is in some MCU&#39;s is reserved, which means that the address of SP is hard coded.<br>
+this is done because other MCUs supports extern SRAM, so you can choose which SRAM to use (the internal provided by ST or the external one). </p>
+</blockquote>
+<p>After loading the Stack Pointer, the CPU sets the Program Counter to the value found at address <code>0x00000004</code>, which corresponds to the <code>Reset Handler</code>. This is the second entry in the Vector Table.</p>
+<p>The CPU then begins executing the code at the <code>Reset Handler</code>, which initializes <code>SRAM</code> (init the <code>.data</code> and <code>.bss</code> sections) and eventually calls the <code>main</code> function to start executing your program.</p>
+<p>To sum up:</p>
+<p>1- <strong>Fetch the Stack Pointer:</strong> The CPU loads the initial Stack Pointer value from <code>0x00000000</code>.<br>
+2- <strong>Load the Reset Handler:</strong>  The CPU sets the Program Counter to the value at <code>0x00000004</code>.<br>
+3- <strong>Execute the Reset Handler:</strong> The CPU starts executing the <code>Reset Handler</code>, which eventually leads to the execution of the <code>main</code> function.</p>
+<h5 id="5--lets-write-a-startup-file">5- let&#39;s write a startup file</h5>
+<p>now you have a complete picture of what is a startup file, lets write some code.<br>
+you can either write it in <code>assembly</code> or in <code>C</code>, i am using <code>C</code>.<br></p>
+<h5 id="defining-the-vt">Defining the VT</h5>
+<p>so we start by defining the <code>VT</code>, which contains the address of the <code>Handler</code>, we can use the Refrence manual, remember to respect the order and replace the reseved spot with <code>0</code>.<br>It depends on the MCU you are using, Since i am using <code>STM32F4RET6</code>, my startup looks like this <a href="https://github.com/Onizuka09/STM32_FromScratch/blob/refs/heads/main/articles/../Src/startup.c">startup.c</a></p>
+<p>it is decalared as an array:</p>
+<pre><code class="hljs language-c"><span class="hljs-type">uint32_t</span> vector_table[] __attribute__((section(<span class="hljs-string">&quot;.isr_vector&quot;</span>))) = {};
+</code></pre>
+<p>the <code>__attribute__((section(&quot;.isr_vector&quot;)))</code> is a <code>gcc attribute</code> defines a new section. ( we put the VT to a new section we created)</p>
+<p>so wee need to update the linker script to include this section: </p>
+<pre><code class="hljs">SECTIONS {
+    .text : {
+    *(.isr_vector)
+    *(.text)
+    *(.rodata)
+    }
+}</code></pre>
+<h5 id="defining-the-handlers">defining the handlers</h5>
+<p>lest&#39;s write the definition of each handler</p>
+<p>let&#39;s start with the <code>Reset_Handler</code></p>
+<pre><code class="hljs language-c"><span class="hljs-type">void</span> <span class="hljs-title function_">Reset_Handler</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>; </code></pre>
+<p>for the other handler, they all follow the same style: </p>
+<pre><code class="hljs language-c"><span class="hljs-type">void</span> <span class="hljs-title function_">NMI_Handler</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>      __<span class="hljs-title function_">attribute__</span><span class="hljs-params">((weak, alias(<span class="hljs-string">&quot;Default_Handler&quot;</span>)))</span>;
+</code></pre>
+<ul>
+<li><code>weak</code>: This is a GCC attribute that tells the <code>linker</code> that this function can be overridden by another function with the same name. If the user defines their own <code>NMI_Handler</code>, it will replace this <code>weak</code> definition.</li>
+<li><code>alias</code>: This attribute creates an alias for the function, in this case, pointing to the <code>Default_Handler</code>. If an <code>NMI interrupt</code> occurs and the <code>NMI_Handler </code> isn&#39;t defined elsewhere, the CPU will execute <code>Default_Handler</code>.</li>
+</ul>
+<p>Here’s what the <code>Default_Handler</code> looks like:</p>
+<pre><code class="hljs language-c"><span class="hljs-comment">// defenition</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">Default_Handler</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>; 
+<span class="hljs-comment">// implementation</span>
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">Default_Handler</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>{ 
+    <span class="hljs-keyword">while</span>(<span class="hljs-number">1</span>);
+}</code></pre>
+<blockquote>
+<p>note: 
+the use of a default handler is really important</p>
+</blockquote>
+<ul>
+<li>we can&#39;t implement all the handlers, we leave it for the user to do so </li>
+<li>we need this function to catch it, this is useful when an exception occurs like division by <code>O</code> we keep the CPU stuck, or else it will enter unpredicted sate (better be safe than sorry ;) ) .</li>
+</ul>
+<p>The definition of the handler are <a href="https://github.com/Onizuka09/STM32_FromScratch/blob/refs/heads/main/articles/../Inc/IRQ_Handlers_Prototypes.h">here</a></p>
+<p>Will see later how to implement the <code>Reset_Handler</code>. </p>
+<h5 id="populating-the-vt">Populating the VT:</h5>
+<p>In this section, I&#39;ll show you how to define the first few elements of the Vector Table (VT). You can complete the rest on your own based on this example:</p>
+<pre><code class="hljs language-c">    <span class="hljs-type">uint32_t</span> vector_table[] __attribute__((section(<span class="hljs-string">&quot;.isr_vector&quot;</span>))) = {
+    <span class="hljs-number">0</span>,<span class="hljs-comment">// in the stM32 NUCLEO-F4RE RF-manual the first elem of the VT is reserved (doesn&#x27;t have an externel SRAM so the SP is hard-coded )</span>
+    (<span class="hljs-type">uint32_t</span>)Reset_Handler,
+    (<span class="hljs-type">uint32_t</span>)NMI_Handler,
+    (<span class="hljs-type">uint32_t</span>)HardFault_Handler,
+    (<span class="hljs-type">uint32_t</span>)MemManage_Handler,
+    (<span class="hljs-type">uint32_t</span>)BusFault_Handler,
+    (<span class="hljs-type">uint32_t</span>)UsageFault_Handler,
+    <span class="hljs-number">0</span>, <span class="hljs-comment">// Rerved</span>
+    <span class="hljs-comment">// ...</span>
+};</code></pre>
+<blockquote>
+<p>Note:
+We cast the function pointers to uint32_t because the functions are of void type, while the array expects uint32_t elements. This ensures the addresses of the handlers are correctly stored in the Vector Table.</p>
+</blockquote>
+<h5 id="implementing-the-reset_handler">implementing the Reset_Handler:</h5>
+<p>this is where all the fun is. </p>
+<p>as mentioned before, the <code>Reset_Handler</code> <br>
+1- copy the <code>.data</code> sections from <code>Flash</code> memory to <code>SRAM</code> memory.<br>
+2- initializes the <code>.bss</code> section in <code>SRAM</code> to <code>0</code><br>
+3- call the <code>main</code> function </p>
+<p>let&#39;s start with the first: one copying the <code>.data</code> section:</p>
+<p>we need to get the size of the <code>.data</code> section, how we do that from the <code>linker script</code> by utilizing the <code>.</code> (dot) function.<br>
+#TODO add a picture explaining the process </p>
+<p>we update the linker script to be like this: </p>
+<pre><code class="hljs">SECTIONS 
+{
+  .text :
+  {
+    *(.isr_vector)
+    *(.text)
+    *(.rodata)
+    . = ALIGN(4) ; 
+    _etext = . ; 
+  }&gt;FLASH
+  /*  data section  */   
+  .data :
+  {
+    _sdata = . ; 
+    *(.data)
+    . = ALIGN(4) ; 
+    _edata = . ; 
+  }&gt; SRAM AT&gt; FLASH
+  /* uninitialized data */ 
+  .bss :
+  {
+    _sbss = . ;
+  *(.bss) 
+  . = ALIGN(4) ; 
+  _ebss = .; 
+
+  }&gt; SRAM
+}</code></pre>
+<p>you can observed that i added these variables:</p>
+<ul>
+<li><code>_etext</code>: Marks the end of the <code>.text</code> section in <code>Flash</code>. This symbol helps determine where the initialized data begins in <code>Flash</code>.</li>
+<li><code>_sdata</code>: Indicates the <code>start</code> of the <code>.data</code> section in <code>SRAM</code>. This is where the initialized variables will be copied to.</li>
+<li><code>_edata</code>: Marks the <code>end</code> of the <code>.data</code> section in <code>SRAM</code>, used to determine the size of the <code>.data</code> section.</li>
+<li><code>_sbss</code>: Indicates the <code>start</code> of the <code>.bss</code> section in <code>SRAM</code>.</li>
+<li><code>_ebss</code>: Marks the <code>end</code> of the <code>.bss</code> section in SRAM <blockquote>
+<p>Note:
+The align is used to align the addresses by 4 bytes. (explained waht aligned is earlier)</p>
+</blockquote>
+</li>
+</ul>
+<p>Now we obtained the location of each section, we can export them to the <code>startup file</code> using the <code>C</code> keyword <code>extern</code>:</p>
+<pre><code class="hljs language-c"><span class="hljs-keyword">extern</span> <span class="hljs-type">uint32_t</span> _etext;
+<span class="hljs-keyword">extern</span> <span class="hljs-type">uint32_t</span> _sdata;
+<span class="hljs-keyword">extern</span> <span class="hljs-type">uint32_t</span> _edata;
+<span class="hljs-keyword">extern</span> <span class="hljs-type">uint32_t</span> _sbss;
+<span class="hljs-keyword">extern</span> <span class="hljs-type">uint32_t</span> _ebss;</code></pre>
+<p>Then can start happily implementing the reset handler: </p>
+<ul>
+<li>first lest copy <code>.data</code> section from the <code>flash</code> to <code>SRAM</code></li>
+</ul>
+<pre><code class="hljs language-c"><span class="hljs-comment">// copy .data section to sram</span>
+<span class="hljs-type">uint32_t</span> size  = &amp;_edata - &amp;_sdata ; <span class="hljs-comment">// calculate the size of .data section </span>
+<span class="hljs-type">uint8_t</span> *pDst = (<span class="hljs-type">uint8_t</span>*)&amp;_sdata;  <span class="hljs-comment">//start position of .data in SRAM</span>
+<span class="hljs-type">uint8_t</span> *pSrc = (<span class="hljs-type">uint8_t</span>*)&amp;_etext;  <span class="hljs-comment">//start position of .data in FLASH </span>
+
+<span class="hljs-keyword">for</span> (<span class="hljs-type">uint32_t</span> i= <span class="hljs-number">0</span> ; i &lt; size ; i++ ){ 
+        *pDst++=*pSrc++; 
+}</code></pre>
+<ul>
+<li>second initialize the <code>.bss</code> section to <code>0</code>.</li>
+</ul>
+<pre><code class="hljs language-c"><span class="hljs-comment">// init the .bss section to Zero in SRAM </span>
+size = &amp;_ebss - &amp;_sbss ; <span class="hljs-comment">// size of .bss </span>
+pDst = (<span class="hljs-type">uint8_t</span>*)&amp; _sbss;  <span class="hljs-comment">// the start position of .bss in SRAM</span>
+
+<span class="hljs-keyword">for</span> (<span class="hljs-type">uint32_t</span> i= <span class="hljs-number">0</span> ; i &lt; size ; i++ ){ 
+ *pDst++ = <span class="hljs-number">0</span> ;
+}</code></pre>
+<ul>
+<li>finally we call <code>main</code>:</li>
+</ul>
+<pre><code class="hljs language-C"><span class="hljs-comment">// put it at top </span>
+<span class="hljs-keyword">extern</span> <span class="hljs-type">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>; 
+<span class="hljs-comment">// implementation</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">Reset_Handler</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
+<span class="hljs-comment">// copy .data section to sram</span>
+<span class="hljs-type">uint32_t</span> size  = &amp;_edata - &amp;_sdata ; 
+<span class="hljs-type">uint8_t</span> *pDst = (<span class="hljs-type">uint8_t</span>*)&amp;_sdata; <span class="hljs-comment">//flash</span>
+<span class="hljs-type">uint8_t</span> *pSrc = (<span class="hljs-type">uint8_t</span>*)&amp;_etext;<span class="hljs-comment">//sram</span>
+<span class="hljs-keyword">for</span> (<span class="hljs-type">uint32_t</span> i= <span class="hljs-number">0</span> ; i &lt; size ; i++ ){ 
+        *pDst++=*pSrc++; 
+}
+<span class="hljs-comment">// init the .bss section to Zero in SRAM </span>
+size = &amp;_ebss - &amp;_sbss ; 
+pDst = (<span class="hljs-type">uint8_t</span>*)&amp; _sbss; 
+<span class="hljs-keyword">for</span> (<span class="hljs-type">uint32_t</span> i= <span class="hljs-number">0</span> ; i &lt; size ; i++ ){ 
+ *pDst++ = <span class="hljs-number">0</span> ;
+}
+<span class="hljs-comment">// call main</span>
+main();
+
+}</code></pre>
+<h5 id="6--startup-file-summery">6- startup file summery</h5>
+<p>in this section i talked about how a general overview of  <code>interuupts</code>, an sneek peak how <code>stm32f4</code> boots up and how to write a <code>startup file</code></p>
+<h3 id="elf-file">Elf file</h3>
+<p>#TODO</p>
+<h3 id="tool-chains">Tool-Chains</h3>
+<p>A toolChain is collection of binaries which allows to:</p>
+<ul>
+<li>compiler  : compiles your code (<code>C/C++,..</code>) to an assembly code.  </li>
+<li>assembler : transforms the assembly code to object files <code>.o</code> (binary format)</li>
+<li>linker    : takes all the object files combines them, to obtain the final executable <code>.elf</code>. </li>
+<li>Build systems: automates the building process of the final executable <code>make, camke, ...</code></li>
+<li>Libraries: combination of function you use a cross your application (<code>math.h</code>)</li>
+<li>Debuggers :    allows you to inspect your code at runtime, step by step. </li>
+<li>Programmer    : a utility that uploads the final executable on your target MCU. </li>
+<li>emulator      : a tool that emulates you hardware used for testing purposes</li>
+</ul>
+<p>For our application, we will be using <code>arm-gcc</code>(compiler, assembler and linker), for the momement we don&#39;t need a library, 
+as the build system, i am using <code>make</code>, the debugger is <code>GDB</code> and for the programmer i am using the open-source tool <code>open-ocd</code></p>
+<h4 id="1--arm-gcc">1- arm-gcc</h4>
+<p>this is a cross-compiler that compiles the code on host machine (you machine ie: <code>x86_64</code>) for tagret architechure <code>arm</code>.<br>
+the arm-gcc also come with these utilities:</p>
+<ul>
+<li>dissect different sections </li>
+<li>disassemble </li>
+<li>extract symbol and size information </li>
+<li>convert executable to other formats, bin,hex </li>
+<li>Provides C standard libraries</li>
+</ul>
+<h6 id="installation">Installation</h6>
+<p><code>Toolchains</code> for arm: </p>
+<ul>
+<li><code>arm-gcc</code> : GNU <code>toolchain</code> (Free and open-source)</li>
+<li><code>armcc</code> from ARM, (ships with <code>KEIL</code>, code restricted, requires licensing)
+linux: 
+<code>sudo apt install gcc-arm-none-eabi </code>
+or</li>
+</ul>
+<pre><code class="hljs language-bash">wget <span class="hljs-string">&quot;https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2&quot;</span>
+tar -jxf gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2
+<span class="hljs-built_in">rm</span> gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2
+<span class="hljs-built_in">export</span> PATH=<span class="hljs-string">&quot;/opt/gcc-arm-none-eabi-10.3-2021.10/bin:<span class="hljs-variable">$PATH</span>&quot;</span></code></pre>
+<p>You  can put the export command in the <code>.bashrc</code> file</p>
+<h6 id="usage">usage</h6>
+<pre><code class="hljs language-bash">arm-none-eabi-gcc file.c -o file</code></pre>
+<ul>
+<li><code>-o</code> means specifies the output file name    </li>
+<li><code>-E</code>: stop after the pre-processing stage, output file format <code>.i</code> </li>
+<li><code>-c</code>: tells the compiler to compile and assemble the <code>C</code> file but not link, output file format (`.o) </li>
+<li><code>-S</code> stop after the compilation stage, do not assemble, output file format <code>.S</code></li>
+<li><code>-march=[name]</code>: this specifies the architecture that the assembler will use, (each arch has it&#39;s specific assembly language)<br><code>-mcpu=[name]</code>:  specifies the name of the target arm processor, GCC will use this name to derive the target architecture (<code>march</code>) and the ARM processor type for which to tune for performance (<code>mtune</code>) </li>
+<li><code>-mthumb</code> or <code>-marm</code> by default it&#39;s set to <code>-marm</code>: select between generating code that executes in <code>ARM</code> and <code>Thumb</code> states  <blockquote>
+<p><strong>Note</strong></p>
+<ul>
+<li><strong>Use <code>-mthumb</code></strong> if you need smaller code size and are working in an environment where memory is limited, and performance isn&#39;t the highest priority. (tells the assembler to use 16-bit long instructions) .</li>
+<li><strong>Use <code>-marm</code></strong> if you need maximum performance, particularly for tasks that require heavy computation, and memory size isn&#39;t a primary concern.(tells the assembler to use 32-bit long instructions) .</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<pre><code class="hljs language-bash">arm-none-eabi-gcc -c main.c -mthumb -mcpu=cortex-m4 -o main.o</code></pre>
+<p><strong>Other flags:</strong>
+<code>-OO:</code> no optimization
+<code>-std=gnu11</code> specifies what C standard to use</p>
+<h4 id="2--build-system-make">2- Build system (make)</h4>
+<p>As i have said before, make is build system that automates the compilation process of your project </p>
+<!---- TODO  ----->
+<h5 id="todo">TODO</h5>
+<p>todo </p>
+<h4 id="3--libraries">3- Libraries:</h4>
+<p>we will understand the diff between the static library and dynamic library, create a static library and include it.  </p>
+<h5 id="todo-1">TODO</h5>
+<p>todo </p>
+<!---- TODO  ----->
+
+
+<h4 id="4--flashing">4- flashing</h4>
+<p>how to use the open-ocd to flash the compiled code </p>
+<h5 id="todo-2">TODO</h5>
+<p>todo </p>
+<!---- TODO  ----->
+
+<h4 id="5--debugging">5- Debugging</h4>
+<p>will understand how GDB works and how to use it</p>
+<!---- TODO  ----->
+<h5 id="todo-3">TODO</h5>
+<p>todo </p>
+<h4 id="6--emulators">6- Emulators</h4>
+<p>how QMU works and how to use it 
+we will look also to renode </p>
+<h5 id="todo-4">TODO</h5>
+<p>todo </p>
+<h1 id="conclusion">conclusion</h1>
+</div>
+</article>
+</main>
+</div>
+<footer>© 2026 Moktar SELLAMI · <a href="https://github.com/Onizuka09">GitHub</a></footer>
+<script src="../../js/sidebar.js"></script>
+</body>
+</html>

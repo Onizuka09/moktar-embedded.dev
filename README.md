@@ -3,6 +3,7 @@ My portfolio -> onizuka09.github.io/moktar-embedded.dev
 ## Run locally
 For tesing,
 ```bash
+    npm run build 
     python -m http.server 8000
 ```
 then open `http://localhost:8000`

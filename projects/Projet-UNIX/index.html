@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projet-UNIX – Moktar SELLAMI</title>
+  <meta name="description" content="A unix sockets project.">
+  <link rel="canonical" href="https://Onizuka09.github.io/portfolio/projects/Projet-UNIX/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Projet-UNIX">
+  <meta property="og:description" content="A unix sockets project.">
+  <meta property="og:url" content="https://Onizuka09.github.io/portfolio/projects/Projet-UNIX/">
+  <meta property="og:site_name" content="Moktar SELLAMI">
+  <meta name="twitter:card" content="summary">
+  <link rel="alternate" type="application/rss+xml" title="Moktar SELLAMI – Blog" href="../../feed.xml">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+
+</head>
+<body class="wide">
+<header class="site-header"><a class="logo" href="../../index.html">Moktar SELLAMI</a><nav><a href="../../index.html">Portfolio</a><a href="../../projects.html" class="active">Projects</a><a href="../../blog.html">Blog</a><a href="../../index.html#contact">Contact</a></nav></header>
+<div class="layout">
+<aside class="sidebar"><nav id="side-nav" aria-label="On this page">
+<a href="#1-contexte-du-projet">1. Contexte du Projet</a>
+<a href="#3-architecture-et-conception">3. Architecture et Conception</a>
+<a href="#31-udp-mono-clientserver" class="sub">3.1 UDP Mono Client/Server</a>
+<a href="#fichier-loggerh" class="sub">Fichier logger.h</a>
+<a href="#32-tcp-mono-clientserver" class="sub">3.2 TCP Mono Client/Server</a>
+<a href="#34-tcp-multi-clientmono-server" class="sub">3.4 TCP Multi Client/Mono Server</a>
+<a href="#35-tcp-multi-clientmutlti-server" class="sub">3.5 TCP Multi Client/Mutlti Server</a>
+<a href="#35-gui-tcp-multi-clientmulti-server" class="sub">3.5 GUI TCP Multi Client/Multi Server</a>
+<a href="#6-conclusion">6. Conclusion</a>
+</nav></aside>
+<main>
+<article>
+  <h1>Projet-UNIX</h1>
+  <div class="meta links"><a href="https://github.com/Onizuka09/Projet-UNIX">View on GitHub</a></div>
+  <div class="prose"><p><strong>Presented by:<br></strong>  </p>
+<pre><code class="hljs">- Moktar SELLAMI
+- Mariem NAJJAR</code></pre>
+<p>Vous Pouvez consulter notre projet sur github: <a href="https://github.com/Onizuka09/Projet-UNIX">https://github.com/Onizuka09/Projet-UNIX</a></p>
+<hr>
+<h1 id="1-contexte-du-projet">1. Contexte du Projet</h1>
+<p>Le thème principal de ce projet consistait à implémenter des solutions de communication réseau en utilisant les protocoles UDP et TCP. L&#39;objectif était de créer plusieurs variantes de client-serveur en fonction des configurations demandées. Les différentes étapes du projet incluaient :</p>
+<ul>
+<li><p><strong>UDP Mono Client/Server</strong> : Implémentation d&#39;une communication simple entre un client unique et un serveur unique en utilisant le protocole UDP, sans connexion.</p>
+</li>
+<li><p><strong>TCP Mono Client/Server</strong> : Mise en place d&#39;une connexion fiable entre un client unique et un serveur unique en utilisant le protocole TCP.</p>
+</li>
+<li><p><strong>TCP Multi Client/Mono Server</strong> : Extension à plusieurs clients pouvant communiquer avec un serveur unique via le protocole TCP.</p>
+</li>
+<li><p><strong>TCP Multi Client/Multi Server</strong> : Mise en œuvre d&#39;une architecture plus complexe avec plusieurs clients interagissant avec plusieurs serveurs.</p>
+</li>
+<li><p><strong>GUI TCP Multi Client/Multi Server</strong> : Développement d&#39;une interface graphique permettant de contrôler l&#39;interaction des clients avec les serveurs.<br>Pour la bibliothèque graphique, j&#39;ai utilisé <strong>GooeyGUI</strong>, une librairie créée par Moktar Sellami et Mohamed Yassine Ahmed Ali.  </p>
+<blockquote>
+<p>Malheureusement, je n&#39;ai pas terminé cette tâche. Le problème ne vient pas seulement de la bibliothèque, mais également de la manière dont je l&#39;ai utilisée. Mon design, qui repose sur deux threads (un pour Newtonking et un pour l&#39;interface graphique), n&#39;est pas encore supporté par la bibliothèque, ce qui entraîne un comportement indéfini.
+Vous pouvez consulter la bibliothèque ici : <a href="https://github.com/YASSINE-AA/GooeyGUI">https://github.com/YASSINE-AA/GooeyGUI</a></p>
+</blockquote>
+</li>
+</ul>
+<h1 id="3-architecture-et-conception">3. Architecture et Conception</h1>
+<p>Le thème principal de ce projet consistait à implémenter des solutions de communication réseau en utilisant les protocoles UDP et TCP. L&#39;objectif était de créer plusieurs variantes de client-serveur en fonction des configurations demandées.</p>
+<p>Ci-dessous, je vais expliquer la conception et l&#39;approche adoptées pour chaque tâche :  </p>
+<h3 id="31-udp-mono-clientserver">3.1 UDP Mono Client/Server</h3>
+<h5 id="architecture-serveur-udp_servc"><strong>Architecture Serveur : <code>udp_serv.c</code></strong></h5>
+<ol>
+<li><strong>Vérifier les arguments</strong> : Le programme accepte uniquement un argument, le port du serveur.</li>
+<li><strong>Créer un socket UDP</strong> : Utilisation de la fonction <code>socket()</code> pour créer un socket de type <code>SOCK_DGRAM</code>.</li>
+<li><strong>Configurer et lier l&#39;adresse du serveur</strong> : Initialisation de la structure <code>sockaddr_in</code> pour définir l&#39;adresse et liaison au socket avec <code>bind()</code>.</li>
+<li><strong>Recevoir un message du client</strong> : Utilisation de la fonction <code>recvfrom()</code> pour lire les données envoyées par le client.</li>
+<li><strong>Générer une séquence aléatoire</strong> : Traitement de la requête reçue en générant une séquence aléatoire, basée sur les données du client.</li>
+<li><strong>Envoyer la réponse au client</strong> : Envoi de la réponse via <code>sendto()</code> au client.</li>
+<li><strong>Fermer le socket</strong> : Fermeture du socket avec la fonction <code>close()</code>.</li>
+</ol>
+<hr>
+<h5 id="architecture-client-udp_clntc"><strong>Architecture Client : <code>udp_clnt.c</code></strong></h5>
+<ol>
+<li><strong>Vérifier les arguments</strong> : Le programme vérifie la validité des arguments, à savoir l&#39;hôte (adresse IP/nom de domaine) et le port du serveur.</li>
+<li><strong>Créer un socket UDP</strong> : Création du socket client avec <code>socket()</code> de type <code>SOCK_DGRAM</code>.</li>
+<li><strong>Configurer l&#39;adresse du serveur</strong> : Définir les informations nécessaires pour contacter le serveur (adresse IP et port).</li>
+<li><strong>Générer un nombre aléatoire et préparer un message</strong> : Création d&#39;une requête avec un nombre aléatoire généré localement.</li>
+<li><strong>Envoyer et recevoir le message au serveur</strong> :  <ul>
+<li>Envoi de la requête au serveur via <code>sendto()</code>.</li>
+<li>Réception de la réponse via <code>recvfrom()</code>.</li>
+</ul>
+</li>
+<li><strong>Afficher les valeurs reçues</strong> : Impression des données retournées par le serveur sur la console.</li>
+<li><strong>Fermer le socket</strong> : Fermeture propre du socket avec la fonction <code>close()</code>.</li>
+</ol>
+<h5 id="fichier-commonh"><strong>Fichier <code>common.h</code></strong></h5>
+<ul>
+<li>Contient une structure de données qui représente le format des messages échangés entre le client et le serveur :</li>
+</ul>
+<pre><code class="hljs language-c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> {</span> 
+  <span class="hljs-type">int</span> n;           <span class="hljs-comment">// Nombre aléatoire généré par le client  </span>
+  <span class="hljs-type">int</span> arr[NMAX];   <span class="hljs-comment">// Réponse du serveur </span>
+} message;</code></pre>
+<hr>
+<h3 id="fichier-loggerh"><strong>Fichier <code>logger.h</code></strong></h3>
+<ul>
+<li>Utilisé dans le serveur pour offrir un affichage intuitif, probablement pour afficher des messages de journalisation ou des événements importants (par exemple, réception ou envoi de messages).</li>
+</ul>
+<hr>
+<h5 id="le-fichier-buildsh"><strong>Le fichier <code>build.sh</code></strong></h5>
+<p>un script shell qui sert a compiler le serveur et le client </p>
+<blockquote>
+<p>j&#39;ai utilise <code>getops</code> pour la tokanization</p>
+</blockquote>
+<pre><code class="hljs language-bash">./build.sh --client || ./build.sh -C    <span class="hljs-comment"># compiler code client </span>
+./build.sh --serveur || ./build.sh -S   <span class="hljs-comment"># compiler code serveur</span></code></pre>
+<div style="display: flex; justify-content: space-between;">
+  <img src="https://raw.githubusercontent.com/Onizuka09/Projet-UNIX/main/doc/udp_clnt.png" alt="Image 1" style="width: 45%;"/>
+  <img src="https://raw.githubusercontent.com/Onizuka09/Projet-UNIX/main/doc/udp_ser.png" alt="Image 2" style="width: 45%;"/>
+</div>
+
+<h3 id="32-tcp-mono-clientserver">3.2 TCP Mono Client/Server</h3>
+<h5 id="structure-du-message-chang-entre-le-serveur-et-le-client"><strong>Structure du message échangé entre le serveur et le client :</strong></h5>
+<pre><code class="hljs language-c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span>
+{</span>
+    Services_e serviceType; <span class="hljs-comment">// Message type</span>
+    MessagePayload payload; <span class="hljs-comment">// Message payload</span>
+} Message;</code></pre>
+<p>Le type <code>MessagePayload</code> est une union qui contient tous les types de données pris en charge pour les échanges entre le client et le serveur :</p>
+<pre><code class="hljs language-c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">union</span>
+{</span>
+    ListCatPayload listCatPayload;
+    ElapsedTimePayload elapsedTimePayload;
+    AuthPayload authPayload;
+    ACKPayload ackPayload;
+    TimeDatePayload timeDatePayload ; 
+} MessagePayload;</code></pre>
+<p>Lors de l&#39;envoi d&#39;un message, le type de service est spécifié à l&#39;aide de l&#39;énumération Services_e :</p>
+<pre><code class="hljs language-c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">enum</span>
+{</span>
+    LISTS_DIR = <span class="hljs-number">0</span>,  <span class="hljs-comment">// Service pour demander la liste des fichiers d&#x27;un répertoire</span>
+    CAT_DIR,        <span class="hljs-comment">// Service pour demander le contenu d&#x27;un fichier</span>
+    ELASPSED_TIME,  <span class="hljs-comment">// Service pour demander le temps écoulé</span>
+    DATE_TIME,      <span class="hljs-comment">// Service pour demander la date et l&#x27;heure</span>
+    END,            <span class="hljs-comment">// Indique que le client souhaite terminer la communication</span>
+    AUTH,           <span class="hljs-comment">// Service d&#x27;authentification avec envoi des identifiants</span>
+    ACK             <span class="hljs-comment">// Service pour envoyer des messages simples (erreurs ou confirmations)</span>
+} Services_e;</code></pre>
+<p>Pour chaque type de message, des structures définissant les données du message (payload) sont créées :</p>
+<pre><code class="hljs language-C"><span class="hljs-comment">/// Payload pour les services LISTS_DIR et CAT_DIR</span>
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span>
+{</span>
+    <span class="hljs-type">char</span> directory_path[<span class="hljs-number">256</span>]; <span class="hljs-comment">// Chemin du répertoire ou fichier</span>
+    <span class="hljs-type">char</span> output[<span class="hljs-number">1024</span>];        <span class="hljs-comment">// Résultat du service</span>
+} ListCatPayload;
+
+<span class="hljs-comment">// Payload pour le service ACK</span>
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span>
+{</span>
+    <span class="hljs-type">char</span> msgACK[<span class="hljs-number">1024</span>]; <span class="hljs-comment">// Message de confirmation ou d&#x27;erreur</span>
+} ACKPayload;
+
+<span class="hljs-comment">// Payload pour le service DATE_TIME</span>
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span>
+{</span>
+    <span class="hljs-type">char</span> date[<span class="hljs-number">50</span>];     <span class="hljs-comment">// Jour actuel</span>
+    <span class="hljs-type">char</span> time[<span class="hljs-number">50</span>];     <span class="hljs-comment">// Heure actuelle</span>
+} TimeDatePayload;
+
+<span class="hljs-comment">// Payload pour le service ELASPSED_TIME</span>
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span>
+{</span>
+    <span class="hljs-type">double</span> elapsed_time_s; <span class="hljs-comment">// Temps écoulé (en secondes)</span>
+} ElapsedTimePayload;
+
+<span class="hljs-comment">// Payload pour le service AUTH</span>
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span>
+{</span>
+    <span class="hljs-type">char</span> username[<span class="hljs-number">50</span>]; <span class="hljs-comment">// Identifiant</span>
+    <span class="hljs-type">char</span> password[<span class="hljs-number">50</span>]; <span class="hljs-comment">// Mot de passe</span>
+} AuthPayload;
+
+</code></pre>
+<hr>
+<h5 id="architecture-netwokc"><strong>Architecture <code>netwok.c</code></strong> :</h5>
+<p>Contient des fonctions utilitaires pour la gestion réseau :</p>
+<pre><code class="hljs language-C"><span class="hljs-comment">// Initialisation sécurisée du socket (gère les erreurs)</span>
+<span class="hljs-type">int</span> <span class="hljs-title function_">SafeInitSocket</span><span class="hljs-params">(<span class="hljs-type">int</span> port)</span>; 
+
+<span class="hljs-comment">// Écoute du socket (gère les erreurs)</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">safeListen</span><span class="hljs-params">(<span class="hljs-type">int</span> queueSize)</span>; 
+
+<span class="hljs-comment">// Envoi sécurisé d&#x27;un message (gère les erreurs)</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">safe_send</span><span class="hljs-params">(<span class="hljs-type">int</span> service_fd, <span class="hljs-type">int</span> sock, Message* message)</span>; 
+
+<span class="hljs-comment">// Réception sécurisée d&#x27;un message (gère les erreurs)</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">safe_rcv</span><span class="hljs-params">(<span class="hljs-type">int</span> service_fd, <span class="hljs-type">int</span> sock, Message* message)</span>; </code></pre>
+<hr>
+<h5 id="architecture-servicesc"><strong>Architecture : <code>services.c</code></strong>:</h5>
+<p>Implémentation des services (<code>ls</code>,<code>cat</code>,<code>date&amp;time</code>, <code>elapsed time</code>) :</p>
+<pre><code class="hljs language-c"><span class="hljs-comment">// Service d&#x27;authentification (utilisateur et mot de passe codés en dur : &#x27;mok&#x27; &amp; &#x27;mok&#x27;)</span>
+<span class="hljs-type">bool</span> <span class="hljs-title function_">Authenticate</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>* username, <span class="hljs-type">const</span> <span class="hljs-type">char</span>* psswd)</span>;
+
+<span class="hljs-comment">// Liste les fichiers d&#x27;un répertoire (utilise `fork` pour exécuter la commande `ls`)</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">ListDirectories</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *path, <span class="hljs-type">char</span> *buff, <span class="hljs-type">size_t</span> buff_size)</span>;
+
+<span class="hljs-comment">// Récupère le contenu d&#x27;un fichier (utilise `fork` pour exécuter la commande `cat`)</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">getFileContent</span><span class="hljs-params">(<span class="hljs-type">char</span>* filename, <span class="hljs-type">char</span>* buff, <span class="hljs-type">size_t</span> buff_size)</span>;
+
+<span class="hljs-comment">// Récupère la date et l&#x27;heure actuelles</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">getDateTime</span><span class="hljs-params">(<span class="hljs-type">char</span>* _time, <span class="hljs-type">size_t</span> time_size, <span class="hljs-type">char</span>* _date, <span class="hljs-type">size_t</span> date_size)</span>;
+
+<span class="hljs-comment">// Calcule le temps écoulé entre deux appels (premier appel : `fcapture = false`)</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">getElapsedTime</span><span class="hljs-params">(<span class="hljs-type">bool</span> fcapture, <span class="hljs-type">double</span>* elapsed)</span>;</code></pre>
+<hr>
+<h5 id="client-tcp_clntc"><strong>Client <code>tcp_clnt.c</code></strong> :</h5>
+<ol>
+<li>Connexion au serveur. </li>
+<li>Authentification sécurisée. </li>
+<li>Envoi des commandes via une boucle. </li>
+<li>Réception des résultats du serveur et affichage.  </li>
+<li>Fin de session après envoi de la commande <code>END</code>.  </li>
+<li>Fermeture propre du socket.</li>
+</ol>
+<hr>
+<h5 id="serveur-tcp_serc"><strong>Serveur <code>tcp_ser.c</code></strong> :</h5>
+<ol>
+<li>Initialisation du serveur.</li>
+<li>Acceptation des connexions client.</li>
+<li>Authentification sécurisée.</li>
+<li>Envoi d’un menu des options disponibles.</li>
+<li>Traitement des requêtes du client (services variés).</li>
+<li>Attente d&#39;une nouvelle action du client ou fin de session.</li>
+</ol>
+<hr>
+<h5 id="le-fichier-buildsh-1"><strong>Le fichier <code>build.sh</code></strong></h5>
+<p>un script shell qui sert a compiler le serveur et le client </p>
+<blockquote>
+<p>j&#39;ai utilise <code>getops</code> pour la tokanization</p>
+</blockquote>
+<pre><code class="hljs language-bash">./build.sh --client || ./build.sh -C    <span class="hljs-comment"># compiler code client </span>
+./build.sh --serveur || ./build.sh -S   <span class="hljs-comment"># compiler code serveur</span></code></pre>
+<div style="display: flex; justify-content: space-between;">
+  <img src="https://raw.githubusercontent.com/Onizuka09/Projet-UNIX/main/doc/tcp_mono_ser.png" alt="Image 1" style="width: 45%;"/>
+  <img src="https://raw.githubusercontent.com/Onizuka09/Projet-UNIX/main/doc/tcp_mono_cl.png" alt="Image 2" style="width: 45%;"/>
+</div>
+
+<h3 id="34-tcp-multi-clientmono-server">3.4 TCP Multi Client/Mono Server</h3>
+<p>Le serveur est conçu pour accepter et gérer plusieurs connexions clients simultanément, avec un maximum de 10 connexions spécifiées dans l&#39;appel <code>listen()</code> :</p>
+<pre><code class="hljs language-c">listen(fd, <span class="hljs-number">10</span>);</code></pre>
+<h5 id="modifications-pour-supporter-plusieurs-connexions">Modifications pour Supporter plusieurs Connexions</h5>
+<p>Le client reste inchangé, mais le serveur utilise des threads pour gérer plusieurs clients en parallèle.</p>
+<hr>
+<h5 id="gestion-multi-client-avec-threads">Gestion Multi-Client avec Threads</h5>
+<ul>
+<li><strong>Threads</strong> : Pour chaque connexion client, un nouveau thread est créé à l&#39;aide de <code>pthread_create</code>.</li>
+<li><strong>Synchronisation</strong> : Les threads partagent certaines ressources (comme le compteur <code>active_clients</code>) qui nécessitent une synchronisation pour éviter les conflits. </li>
+<li><strong>Mutex</strong> : Utilisation de <code>pthread_mutex_lock</code> et <code>pthread_mutex_unlock</code> pour synchroniser les accès aux ressources partagées.</li>
+</ul>
+<hr>
+<h5 id="gestion-des-interruptions-avec-un-signal-handler">Gestion des Interruptions avec un Signal Handler</h5>
+<ul>
+<li>Pour gérer proprement les interruptions de l&#39;utilisateur (Ctrl+C), un gestionnaire de signaux est ajouté :<pre><code class="hljs language-c">signal(SIGINT, handle_interrupt);</code></pre>
+</li>
+<li>Ce gestionnaire permet de libérer les ressources avant de fermer le serveur.</li>
+</ul>
+<div style="display: flex; justify-content: center;">
+  <img src="https://raw.githubusercontent.com/Onizuka09/Projet-UNIX/main/doc/tcp_multi_cl_ser.png" alt="Image 2" style="width: 45%;"/>
+</div>
+
+<p><code> </code></p>
+<div style="display: flex; justify-content: space-between;">
+  <img src="https://raw.githubusercontent.com/Onizuka09/Projet-UNIX/main/doc/tcp_multi_clnt1.png" alt="Image 1" style="width: 45%;"/>
+  <img src="https://raw.githubusercontent.com/Onizuka09/Projet-UNIX/main/doc/tcp_multi_clnt2.png" alt="Image 2" style="width: 45%;"/>
+</div>
+
+<h3 id="35-tcp-multi-clientmutlti-server">3.5 TCP Multi Client/Mutlti Server</h3>
+<p>Donc  jai repartie le code les service que le serveur excute en plusieur serveur. J&#39;ai obtenu </p>
+<ul>
+<li>serveur proxy: </li>
+<li>serveur pour la service<code>date&amp;heur</code></li>
+<li>serveur pour la service<code>temps ecoule</code></li>
+<li>serveur pour la service<code>list fichers (ls)</code></li>
+<li>serveur pour la service<code>afficher contenu fichier (cat)</code></li>
+</ul>
+<p>j&#39;ai associa a chaque serveur un port specefique <code>services.h</code>: </p>
+<pre><code class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> PORT_LIST_DIR_SERVICE 5081</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> PORT_ELAPSED_TIME_SERVICE 5082</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> PORT_CAT_CONTENT_SERVICE 5083</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> PORT_TIME_DATE_SERVICE 5084</span>
+ </code></pre>
+<p>Le serveur proxy est responsable :</p>
+<ul>
+<li>Accepter les demandes des clients.</li>
+<li>Authentifier les clients.</li>
+<li>Transmettre la demande du client au serveur qui exécute le service demandé.</li>
+<li>Recevoir la réponse du serveur de service X.</li>
+<li>Envoyer la réponse au client.<blockquote>
+<p>chaque client est handler dans une tache specifique</p>
+</blockquote>
+</li>
+</ul>
+<h5 id="etape-communication-client-serveur"><strong>etape communication client serveur:</strong></h5>
+<ol>
+<li>Le client se connecte au serveur proxy.</li>
+<li>Le serveur proxy authentifie le client.</li>
+<li>Le serveur proxy attend une demande de service du client.</li>
+<li>Le serveur proxy transmet la demande au serveur qui exécute le service spécifique.</li>
+<li>Le serveur proxy reçoit la réponse du serveur de service.</li>
+<li>Le serveur proxy renvoie la réponse au client.</li>
+</ol>
+<hr>
+<h5 id="compilation-et-exceution">Compilation et exceution</h5>
+<pre><code class="hljs language-bash">./build.sh --client || ./build.sh -C    <span class="hljs-comment"># compiler code client </span>
+./build.sh --serveur || ./build.sh -S   <span class="hljs-comment"># compiler code serveur</span></code></pre>
+<p>pour l&#39;execution j&#39;ai ajouter un script qui lance le proxy, les service et 3 client dans terminale en utilisant <code>tmux</code>. </p>
+<pre><code class="hljs language-bash">./build.sh --run) || ./build.sh -r   <span class="hljs-comment"># compiler code serveur</span></code></pre>
+<blockquote>
+<p>Tmux est un multiplexeur de terminal open-source pour les systèmes d&#39;exploitation de type Unix. Il permet d&#39;accéder simultanément à plusieurs sessions de terminal dans une seule fenêtre.</p>
+</blockquote>
+<div style="display: flex; justify-content: center;">
+  <img src="https://raw.githubusercontent.com/Onizuka09/Projet-UNIX/main/doc/tcp_muti_cl_ser.png" alt="Image 2" style="width: 45%;"/>
+</div>
+
+<h3 id="35-gui-tcp-multi-clientmulti-server">3.5 GUI TCP Multi Client/Multi Server</h3>
+<p>J&#39;ai intégré le code de l&#39;interface graphique comme suit :</p>
+<p>Comme mentionné précédemment, j&#39;ai séparé le code de l&#39;interface graphique et celui de la communication réseau (client-serveur) en deux threads distincts. Le thread principal exécute le code graphique, tandis qu&#39;un autre thread est créé pour gérer toute la partie réseau (communication entre serveur client).</p>
+<blockquote>
+<p>J&#39;ai fait cela parce que, dans le code de réseau, le client attend une réponse du serveur. Cela introduit des blocages dans le code, ce qui fait que l&#39;interface graphique (GUI) se fige. </p>
+</blockquote>
+<hr>
+<h5 id="interface-graphique"><strong>Interface graphique</strong> :</h5>
+<p>J&#39;ai créé deux interfaces graphiques (fenêtres) :</p>
+<ul>
+<li>Une pour l&#39;authentification</li>
+<li>Une autre pour les services</li>
+</ul>
+<hr>
+<h5 id="je-contrle-la-visibilit-de-ces-deux-interfaces"><strong>Je contrôle la visibilité de ces deux interfaces</strong> :</h5>
+<ul>
+<li>Lorsque le client est dans la phase d&#39;authentification, l&#39;interface d&#39;authentification est activée, et l&#39;interface des services est désactivée.</li>
+<li>Une fois l&#39;authentification réussie, l&#39;interface des services est activée, et celle d&#39;authentification est désactivée.
+<strong>Fichier <code>ui.c</code> :</strong>
+J&#39;ai ajouté un fichier <code>ui.c</code>qui implémente le rendu des interfaces graphiques avec les fonctions suivantes :</li>
+</ul>
+<pre><code class="hljs language-c"><span class="hljs-type">void</span> <span class="hljs-title function_">create_services_layout</span><span class="hljs-params">()</span>;               <span class="hljs-comment">// Création de l&#x27;interface des services</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">Create_authentification_layout</span><span class="hljs-params">()</span>;       <span class="hljs-comment">// Création de l&#x27;interface d&#x27;authentification  </span>
+<span class="hljs-comment">// Fonctions pour gérer l&#x27;interface</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">setUserID</span><span class="hljs-params">(<span class="hljs-type">int</span> ID)</span>;
+<span class="hljs-type">void</span> <span class="hljs-title function_">set_ConnectionStatus</span><span class="hljs-params">(<span class="hljs-type">bool</span> st)</span>;
+<span class="hljs-type">char</span>* <span class="hljs-title function_">getUserName</span><span class="hljs-params">()</span>;
+<span class="hljs-type">char</span>* <span class="hljs-title function_">getPasswd</span><span class="hljs-params">()</span>;
+<span class="hljs-type">char</span>* <span class="hljs-title function_">getFilename</span><span class="hljs-params">()</span>; 
+<span class="hljs-type">char</span>* <span class="hljs-title function_">getPath</span><span class="hljs-params">()</span>; 
+<span class="hljs-type">void</span> <span class="hljs-title function_">printOUputContent</span><span class="hljs-params">()</span>; 
+<span class="hljs-type">void</span> <span class="hljs-title function_">setDateTime</span><span class="hljs-params">(<span class="hljs-type">char</span>* date,<span class="hljs-type">char</span>* time)</span>; 
+<span class="hljs-type">void</span> <span class="hljs-title function_">setElapsedTime</span><span class="hljs-params">(<span class="hljs-type">double</span> etime)</span>; </code></pre>
+<hr>
+<h5 id="dossier-gooeygui"><strong>Dossier GooeyGUI :</strong></h5>
+<p>Le dossier GooeyGUI contient la bibliothèque nécessaire (fichiers d&#39;en-tête <code>.h</code>et fichiers <code>.so</code> requis pour <code>dynamic linking</code>).</p>
+<hr>
+<p>Le code du serveur restes le mems,</p>
+<p>Erreur que j&#39;ai rencontrait:</p>
+<pre><code class="hljs language-bash">X Error of failed request:  BadAccess (attempt to access private resource denied)
+  Major opcode of failed request:  152 (GLX)
+  Minor opcode of failed request:  5 (X_GLXMakeCurrent)
+  Serial number of failed request:  3198
+  Current serial number <span class="hljs-keyword">in</span> output stream:  3198</code></pre>
+<p>Je suis actuellement en train de tester une autre méthode pour résoudre le problème rencontré.</p>
+<hr>
+<h5 id="compilation-et-exceution-1">Compilation et exceution</h5>
+<pre><code class="hljs language-bash">./build.sh --client || ./build.sh -C    <span class="hljs-comment"># compiler code client </span>
+./build.sh --serveur || ./build.sh -S   <span class="hljs-comment"># compiler code serveur</span></code></pre>
+<div style="display: flex; justify-content: space-between;">
+  <img src="https://raw.githubusercontent.com/Onizuka09/Projet-UNIX/main/doc/GUI_auth_lay.png" alt="Image 1" style="width: 45%;"/>
+  <img src="https://raw.githubusercontent.com/Onizuka09/Projet-UNIX/main/doc/GUI_services_lay.png" alt="Image 2" style="width: 45%;"/>
+</div>
+
+<h2 id="6-conclusion">6. Conclusion</h2>
+<p>Ce projet a permis de comprendre les différences fondamentales entre les protocoles UDP et TCP, ainsi que les défis liés à la gestion de multiples connexions et à la création d&#39;interfaces graphiques pour des applications réseau.</p>
+</div>
+</article>
+</main>
+</div>
+<footer>© 2026 Moktar SELLAMI · <a href="https://github.com/Onizuka09">GitHub</a></footer>
+<script src="../../js/sidebar.js"></script>
+</body>
+</html>

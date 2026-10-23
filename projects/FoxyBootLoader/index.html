@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FoxyBootLoader – Moktar SELLAMI</title>
+  <meta name="description" content="minimal stm32 bootloader">
+  <link rel="canonical" href="https://Onizuka09.github.io/portfolio/projects/FoxyBootLoader/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="FoxyBootLoader">
+  <meta property="og:description" content="minimal stm32 bootloader">
+  <meta property="og:url" content="https://Onizuka09.github.io/portfolio/projects/FoxyBootLoader/">
+  <meta property="og:site_name" content="Moktar SELLAMI">
+  <meta name="twitter:card" content="summary">
+  <link rel="alternate" type="application/rss+xml" title="Moktar SELLAMI – Blog" href="../../feed.xml">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+
+</head>
+<body class="wide">
+<header class="site-header"><a class="logo" href="../../index.html">Moktar SELLAMI</a><nav><a href="../../index.html">Portfolio</a><a href="../../projects.html" class="active">Projects</a><a href="../../blog.html">Blog</a><a href="../../index.html#contact">Contact</a></nav></header>
+<div class="layout">
+<aside class="sidebar"><nav id="side-nav" aria-label="On this page">
+<a href="#bootloader">bootloader</a>
+<a href="#tools">tools</a>
+</nav></aside>
+<main>
+<article>
+  <h1>FoxyBootLoader</h1>
+  <div class="meta links"><a href="https://github.com/Onizuka09/FoxyBootLoader">View on GitHub</a></div>
+  <div class="prose"><p>Foxy boot is a minimal bootloader for the stm32f4</p>
+<ul>
+<li>The Flash size is 1Mb : 0x0800 0000 - 0x080F FFFF</li>
+<li>The SRAM is 194 - 64 = 128Kb 0x2000 0000 - 0x2001 FFFF</li>
+<li>The CCM (core coupled memory) 64 Kb</li>
+</ul>
+<h2 id="bootloader">bootloader</h2>
+<ul>
+<li>The bootloader size will be 32Kb, so it will be from  0x0800 0000 - 0x0800 8000</li>
+<li>the new flash layou will be from  0x0800 8000 - 0x080F FFFF</li>
+</ul>
+<p>in the bootloader can jump to the main functionm by taking the address the address of Vector table, the vector table contains the address for the reset handler 
+the reset handler will then launch our main</p>
+<p>for the main app we include the bootloader section by adding section called <code>bootloader_section</code> in the linker scritp and we create an assembly file that includes the <code>bootloader.bin</code> into that section </p>
+<p>in the app we need to offset the the vector table with the bootloade size unless our app will point to the vector table of the bootloader.</p>
+<h1 id="tools">tools</h1>
+<p>after the bootlader genraration we pad the extra space with 0xff 
+to analyse the .bin file we use <code>bewitched Boolloader.bin</code> 
+can be installed from <a href="https://github.com/francisrstokes/bewitched">link</a></p>
+</div>
+</article>
+</main>
+</div>
+<footer>© 2026 Moktar SELLAMI · <a href="https://github.com/Onizuka09">GitHub</a></footer>
+<script src="../../js/sidebar.js"></script>
+</body>
+</html>

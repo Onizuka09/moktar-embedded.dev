@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BL475-SensorHub – Moktar SELLAMI</title>
+  <meta name="description" content="A Zephyr based project on stm32BL475 to collect onboard sensor data and transmit it over mqtt to a dashboard.">
+  <link rel="canonical" href="https://Onizuka09.github.io/portfolio/projects/BL475-SensorHub/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="BL475-SensorHub">
+  <meta property="og:description" content="A Zephyr based project on stm32BL475 to collect onboard sensor data and transmit it over mqtt to a dashboard.">
+  <meta property="og:url" content="https://Onizuka09.github.io/portfolio/projects/BL475-SensorHub/">
+  <meta property="og:site_name" content="Moktar SELLAMI">
+  <meta name="twitter:card" content="summary">
+  <link rel="alternate" type="application/rss+xml" title="Moktar SELLAMI – Blog" href="../../feed.xml">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+
+</head>
+<body class="wide">
+<header class="site-header"><a class="logo" href="../../index.html">Moktar SELLAMI</a><nav><a href="../../index.html">Portfolio</a><a href="../../projects.html" class="active">Projects</a><a href="../../blog.html">Blog</a><a href="../../index.html#contact">Contact</a></nav></header>
+<div class="layout">
+<aside class="sidebar"><nav id="side-nav" aria-label="On this page">
+<a href="#usage">Usage</a>
+<a href="#todo" class="sub">TODO</a>
+</nav></aside>
+<main>
+<article>
+  <h1>BL475-SensorHub</h1>
+  <div class="meta links"><a href="https://github.com/Onizuka09/BL475-SensorHub">View on GitHub</a></div>
+  <div class="prose"><p>A zephyr based project on stm32BL475 to collect onboard sensor data and transmit it over mqtt to a dashboard.</p>
+<ul>
+<li>wifi connectivity.</li>
+<li>configured static ip adress.</li>
+<li>configured mqtt ipv4 sockets.</li>
+<li>configured a thread that collects sensor data and stores it into a queue. </li>
+<li>configured a thread that reads sensor data form queue and sends it over mqtt.  </li>
+<li>main loop for maintaining the connection to mqtt broker.<blockquote>
+<p>This projects uses a local mqtt broker mosquitto</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="supported-sensors">supported sensors:</h4>
+<ul>
+<li>hts221:  Temperture sensor </li>
+<li>lsm6dsl: Acceleromter and Gyroscope sensor</li>
+<li>lis3mdl: Magnetometer sensor </li>
+<li>lps22hb: Pressure sensor</li>
+<li>vl53l0x: TOF(Time of Flight) sensor</li>
+</ul>
+<h2 id="usage">Usage</h2>
+<ul>
+<li>Buidling</li>
+</ul>
+<pre><code class="hljs language-bash">west -p always -b disco_l475_iot1 </code></pre>
+<ul>
+<li>Flashing</li>
+</ul>
+<pre><code class="hljs language-bash">west flash --runner openocd</code></pre>
+<h3 id="todo">TODO</h3>
+<ul>
+<li>FIX the accelerometer and gyroscope sensor readings (reading 0 ) </li>
+<li>Use the json module in zephy to package the data </li>
+<li>Make the modules (.h/.c) kconfig</li>
+<li>Move the mqtt main connection loop to a sperate thread </li>
+<li>Make the system use low power reads data every 5 min them go to sleep </li>
+<li>Store wifi credentials in FLASH mem (QSPI)</li>
+<li>Make the wifi Reconnect upon disconnection</li>
+<li>Add support for dhcp and connect to mosquitto broker online</li>
+<li>Add support for mqtt TLS</li>
+</ul>
+</div>
+</article>
+</main>
+</div>
+<footer>© 2026 Moktar SELLAMI · <a href="https://github.com/Onizuka09">GitHub</a></footer>
+<script src="../../js/sidebar.js"></script>
+</body>
+</html>

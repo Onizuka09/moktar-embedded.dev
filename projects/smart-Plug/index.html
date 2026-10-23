@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>smart-Plug – Moktar SELLAMI</title>
+  <meta name="description" content="An IoT solution to control a group of plugs that communicates with the gateway over ESP-NOW and a dashboard as a UI.">
+  <link rel="canonical" href="https://Onizuka09.github.io/portfolio/projects/smart-Plug/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="smart-Plug">
+  <meta property="og:description" content="An IoT solution to control a group of plugs that communicates with the gateway over ESP-NOW and a dashboard as a UI.">
+  <meta property="og:url" content="https://Onizuka09.github.io/portfolio/projects/smart-Plug/">
+  <meta property="og:site_name" content="Moktar SELLAMI">
+  <meta name="twitter:card" content="summary">
+  <link rel="alternate" type="application/rss+xml" title="Moktar SELLAMI – Blog" href="../../feed.xml">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+
+</head>
+<body class="wide">
+<header class="site-header"><a class="logo" href="../../index.html">Moktar SELLAMI</a><nav><a href="../../index.html">Portfolio</a><a href="../../projects.html" class="active">Projects</a><a href="../../blog.html">Blog</a><a href="../../index.html#contact">Contact</a></nav></header>
+<div class="layout">
+<aside class="sidebar"><nav id="side-nav" aria-label="On this page">
+<a href="#how-the-system-works">How the System Works</a>
+<a href="#overall-design" class="sub">Overall Design</a>
+<a href="#tools-used-in-this-project">Tools Used in This Project</a>
+<a href="#development-environment" class="sub">Development Environment</a>
+<a href="#hardware" class="sub">Hardware</a>
+<a href="#contributors">Contributors</a>
+</nav></aside>
+<main>
+<article>
+  <h1>smart-Plug</h1>
+  <div class="meta links"><a href="https://github.com/Onizuka09/smart-Plug">View on GitHub</a></div>
+  <div class="prose"><p>This academic project is a team effort involving Mariem, Ameni, Tayssir, and Moktar.</p>
+<p>We created a solution where a user can control a plug via a web interface created with Symfony. The user can turn the plug on or off, or set a timer for the plug to be on for a specified duration. Additionally, we added the ability to measure power consumption using a current sensor.</p>
+<h2 id="how-the-system-works">How the System Works</h2>
+<p><img src="https://raw.githubusercontent.com/Onizuka09/smart-Plug/main/Docs/SmartPlugAch.png" alt="image"></p>
+<h3 id="overall-design">Overall Design</h3>
+<ul>
+<li>Application Side (Web): We used Symfony to manage the web application and MySQL database. Additionally, we utilized Flask as a REST API server to communicate with the gateway.</li>
+<li>Gateway (Root): Manages all the plugs configured by the user and communicates with them via ESP-NOW, creating a mesh network.</li>
+<li>Plug (Device): Receives configurations from the gateway and performs the specified functions.</li>
+</ul>
+<p>Sympfony application Code: <a href="https://github.com/baatourtayssir/project_architecture">Link</a></p>
+<p>A demonstration Video Link: <a href="https://drive.google.com/file/d/1TJcWJvaX6eDexHLpk7FHz62CD4a1cyaN/view?usp=sharing">Video</a> </p>
+<h4 id="step-1-configuration">Step 1: Configuration</h4>
+<p>The user configures the gateway and the plug to connect to the local network and establish communication with the server via a self-hosted webpage.</p>
+<p>After configuration is complete, a firmware update over the air (OTA) will occur to set the firmware of the gateway and the plug. The WiFi settings and the server IP address are saved in LittleFS.</p>
+<h4 id="step-2-device-configuration">Step 2: Device Configuration</h4>
+<p>The user logs into the Symfony application to configure the device. The configuration involves setting a MAC address, a name (e.g., &#39;Lamp&#39;), a location (e.g., &#39;Kitchen&#39;), and a function (ON/Off/Timer). All configured devices will be sent to the gateway. Communication between the gateway and the server is over WiFi, utilizing the REST API to send and receive requests.</p>
+<h4 id="step-3-gateway-and-device-communication">Step 3: Gateway and Device Communication</h4>
+<p>The gateway receives the connected devices in JSON format, then parses this data and maps it into a table of structs. Each table element is a struct representing a device and its configuration. The gateway then waits for a plug to establish communication over ESP-NOW. An authentication process will compare the MAC address of the device with the list of connected devices. If authentication is successful, it will send the configuration over ESP-NOW to the device; otherwise, it will ignore the device. The gateway can also update the device with new configurations or remove it from the list of connected devices.</p>
+<h4 id="step-4-device-operation">Step 4: Device Operation</h4>
+<p>The device gets configured and performs the specified function (On, Off, etc.). If the function is &#39;On&#39;, the current consumption will be displayed on an LCD. If the function is &#39;Timer&#39;, the LCD will display a countdown and the current consumption.</p>
+<h2 id="tools-used-in-this-project">Tools Used in This Project</h2>
+<h3 id="development-environment">Development Environment</h3>
+<p>In this project, I opted not to use the Arduino IDE. Instead, I created my own development environment using PlatformIO CLI and used Neovim as my IDE.</p>
+<h3 id="hardware">Hardware</h3>
+<p><img src="https://raw.githubusercontent.com/Onizuka09/smart-Plug/main/Docs/Smart_plug.png" alt="image"></p>
+<ul>
+<li>ESP32 for the Gateway</li>
+<li>ESP32 for the Device</li>
+<li>Relay</li>
+<li>I2C LCD</li>
+<li>ASC-712 Current Sensor</li>
+</ul>
+<p>Both the gateway and the plug are powered via USB cables.</p>
+<h5 id="note">Note:</h5>
+<p>This is the first version of the smart plug.</p>
+<p>Currently the gateway can only configure one plug, the next version will focus more on managing multiple plugs. </p>
+<p>Set a unified programming style (probably C++) and use the OOP paradigm while implementing software design principles.</p>
+<h1 id="contributors">Contributors</h1>
+<ul>
+<li><p><a href="">@Onizuka09</a></p>
+</li>
+<li><p><a href="">@Amanislh22</a> </p>
+</li>
+<li><p><a href="">@mariemnajjar</a> </p>
+</li>
+<li><p><a href="">@baatourtayssir</a></p>
+</li>
+</ul>
+</div>
+</article>
+</main>
+</div>
+<footer>© 2026 Moktar SELLAMI · <a href="https://github.com/Onizuka09">GitHub</a></footer>
+<script src="../../js/sidebar.js"></script>
+</body>
+</html>

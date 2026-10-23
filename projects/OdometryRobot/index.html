@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OdometryRobot – Moktar SELLAMI</title>
+  <meta name="description" content="Autonomous navigation robot using STM32G070RB.">
+  <link rel="canonical" href="https://Onizuka09.github.io/portfolio/projects/OdometryRobot/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="OdometryRobot">
+  <meta property="og:description" content="Autonomous navigation robot using STM32G070RB.">
+  <meta property="og:url" content="https://Onizuka09.github.io/portfolio/projects/OdometryRobot/">
+  <meta property="og:site_name" content="Moktar SELLAMI">
+  <meta name="twitter:card" content="summary">
+  <link rel="alternate" type="application/rss+xml" title="Moktar SELLAMI – Blog" href="../../feed.xml">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+
+</head>
+<body class="wide">
+<header class="site-header"><a class="logo" href="../../index.html">Moktar SELLAMI</a><nav><a href="../../index.html">Portfolio</a><a href="../../projects.html" class="active">Projects</a><a href="../../blog.html">Blog</a><a href="../../index.html#contact">Contact</a></nav></header>
+<div class="layout">
+<aside class="sidebar"><nav id="side-nav" aria-label="On this page">
+<a href="#project-overview">Project Overview</a>
+<a href="#example-of-input-commands">Example of Input Commands</a>
+<a href="#using-this-sequence-the-robot-generates-a-trajectory-and-continuously-estimates-its-position-orientation-and-velocity-through-odometry">Using this sequence, the robot generates a trajectory and continuously estimates its position, orientation, and velocity through odometry.</a>
+<a href="#system-architecture">System Architecture</a>
+<a href="#hardware" class="sub">Hardware</a>
+<a href="#stm32-software-design">STM32  Software Design</a>
+<a href="#control-algorithms">Control Algorithms</a>
+<a href="#position-and-angular-pid-control" class="sub">Position and Angular PID Control</a>
+<a href="#odometry-module">Odometry Module</a>
+<a href="#velocity-ramping-system">Velocity Ramping System</a>
+<a href="#ramping-strategy" class="sub">Ramping Strategy</a>
+<a href="#achieved-results" class="sub">Achieved Results</a>
+<a href="#pinout">Pinout</a>
+<a href="#led" class="sub">LED</a>
+<a href="#h-bridge-motor-driver-tb6612fng" class="sub">H-Bridge (Motor Driver) TB6612FNG</a>
+<a href="#encoders" class="sub">Encoders</a>
+<a href="#uart-communication" class="sub">UART Communication</a>
+<a href="#encoder-wiring">Encoder Wiring</a>
+<a href="#pinouts">Pinouts</a>
+</nav></aside>
+<main>
+<article>
+  <h1>OdometryRobot</h1>
+  <div class="meta links"><a href="https://github.com/Onizuka09/OdometryRobot">View on GitHub</a></div>
+  <div class="prose"><p><img src="https://raw.githubusercontent.com/Onizuka09/OdometryRobot/main/Imgs/robot.png" alt="alt text"></p>
+<h2 id="project-overview">Project Overview</h2>
+<p><strong>OdometryRobot</strong> is a mobile robotics project focused on <strong>precise motion control and odometry estimation</strong> using a <strong>bare-metal STM32 microcontroller</strong>.</p>
+<p>The robot executes a sequence of high-level movement commands (distance and angle) and reconstructs its trajectory using <strong>encoder-based odometry</strong> .</p>
+<hr>
+<h2 id="example-of-input-commands">Example of Input Commands</h2>
+<p>The robot receives a sequence of movement instructions such as:</p>
+<pre><code class="hljs language-text">Forward : 100 m
+Right   : 90°
+Forward : 100 m
+Right   : 90°
+Forward : 100 m
+Left    : 90°</code></pre>
+<p><a href="https://drive.google.com/drive/u/1/folders/1ZNW4RhMkKBMcUL0omC54ymU_Hy738hz0">Demo videos</a></p>
+<h2 id="using-this-sequence-the-robot-generates-a-trajectory-and-continuously-estimates-its-position-orientation-and-velocity-through-odometry">Using this sequence, the robot generates a trajectory and continuously estimates its <strong>position</strong>, <strong>orientation</strong>, and <strong>velocity</strong> through odometry.</h2>
+<h2 id="system-architecture">System Architecture</h2>
+<p>The system is divided into two main parts: <strong>Hardware</strong> and <strong>Control System</strong>.</p>
+<h3 id="hardware">Hardware</h3>
+<h4 id="motors-with-encoders">Motors with Encoders</h4>
+<ul>
+<li>Provide wheel rotation feedback</li>
+<li>Used for velocity and distance estimation</li>
+</ul>
+<h4 id="microcontroller">Microcontroller</h4>
+<ul>
+<li><p><strong>STM32G0</strong> as the main MCU</p>
+</li>
+<li><p>HAL</p>
+</li>
+<li><p>Responsible for:</p>
+<ul>
+<li>Real-time motor control</li>
+<li>Odometry computation</li>
+<li>Control system</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="stm32-software-design">STM32  Software Design</h2>
+<p>All drivers and control modules are implemented using <strong>HAL</strong></p>
+<h4 id="encoder-module">Encoder Module</h4>
+<ul>
+<li>Quadrature decoding using hardware timers (encoder mode)</li>
+<li>Measures wheel speed and traveled distance</li>
+</ul>
+<h4 id="uart-module">UART Module</h4>
+<ul>
+<li>Bare-metal UART implementation</li>
+<li>Used for command reception and data transmission</li>
+</ul>
+<h4 id="clock-and-system-configuration">Clock and System Configuration</h4>
+<ul>
+<li>RCC and system clock configuration</li>
+<li>Peripheral initialization without HAL</li>
+</ul>
+<h4 id="motor-control-module">Motor Control Module</h4>
+<ul>
+<li>PWM generation using timers</li>
+<li>Direction and speed control of DC motors</li>
+</ul>
+<hr>
+<h2 id="control-algorithms">Control Algorithms</h2>
+<h3 id="position-and-angular-pid-control">Position and Angular PID Control</h3>
+<p>The robot utilizes a <strong>dual cascaded PID architecture</strong>, featuring separate control loops for <strong>linear position</strong> and <strong>angular orientation</strong>. This structure improves stability, smoothness, and tracking accuracy.</p>
+<p><img src="https://raw.githubusercontent.com/Onizuka09/OdometryRobot/main/Imgs/postion_control_pid_system_arch.png" alt="alt text"></p>
+<h4 id="position-control-cascade">Position Control Cascade</h4>
+<ul>
+<li><p><strong>Outer Loop (Position PID)</strong>:</p>
+<ul>
+<li>Controls the absolute target position (distance)</li>
+<li>Computes the desired linear velocity setpoint</li>
+</ul>
+</li>
+<li><p><strong>Inner Loop (Linear Velocity PID)</strong>:</p>
+<ul>
+<li>Regulates the wheel-driven linear velocity</li>
+<li>Ensures smooth motion and accurate distance tracking</li>
+</ul>
+</li>
+</ul>
+<p>This cascade structure allows the robot to reach target distances precisely while avoiding abrupt speed changes.</p>
+<h4 id="angular-control-cascade">Angular Control Cascade</h4>
+<ul>
+<li><p><strong>Outer Loop (Angle PID)</strong>:</p>
+<ul>
+<li>Maintains the desired heading angle</li>
+<li>Generates an angular velocity reference</li>
+</ul>
+</li>
+<li><p><strong>Inner Loop (Angular Velocity PI)</strong>:</p>
+<ul>
+<li>Regulates rotational speed</li>
+<li>Minimizes oscillations and overshoot during turns</li>
+</ul>
+</li>
+</ul>
+<p>This approach provides stable and smooth rotational motion, especially during sharp angle changes.</p>
+<hr>
+<h2 id="odometry-module">Odometry Module</h2>
+<p>The odometry module is responsible for estimating the robot’s motion state in real time. It computes:</p>
+<ul>
+<li>Linear velocity</li>
+<li>Angular velocity</li>
+<li>Robot position (<strong>x, y</strong> coordinates)</li>
+<li>Robot orientation (angle in <strong>radians</strong> and <strong>degrees</strong>)</li>
+<li>Total distance traveled</li>
+</ul>
+<p>These estimates are derived from:</p>
+<ul>
+<li>Wheel encoder measurements</li>
+<li>Inertial data (accelerometer and gyroscope)</li>
+</ul>
+<hr>
+<h2 id="velocity-ramping-system">Velocity Ramping System</h2>
+<p>A critical aspect of motion control is the implementation of <strong>velocity ramping</strong> for both <strong>linear</strong> and <strong>angular</strong> velocities. This system ensures smooth acceleration and deceleration, which is essential for the following reasons:</p>
+<ul>
+<li><strong>Prevents wheel slipping</strong>: Sudden acceleration can cause loss of traction, especially on smooth surfaces</li>
+<li><strong>Reduces mechanical stress</strong>: Gradual velocity changes reduce stress on motors, gears, and mechanical components</li>
+<li><strong>Improves energy efficiency</strong>: Smooth acceleration profiles consume less power than abrupt movements</li>
+<li><strong>Enhances system stability</strong>: Prevents overshoot and oscillations in the control loops</li>
+<li><strong>Increases position accuracy</strong>: Smooth transitions lead to more precise trajectory tracking</li>
+</ul>
+<h3 id="ramping-strategy">Ramping Strategy</h3>
+<p>The ramping system is implemented for both <strong>linear velocity</strong> (<code>odo.v</code>) and <strong>angular velocity</strong> (<code>odo.w</code>) using a two-stage approach:</p>
+<ol>
+<li><p><strong>Ramp-Limited Setpoint</strong></p>
+<ul>
+<li>A gradually increasing velocity limit</li>
+<li>Prevents sudden jumps in commanded speed</li>
+</ul>
+</li>
+<li><p><strong>Target Capping</strong></p>
+<ul>
+<li>Ensures commanded velocities never exceed physical or safety constraints</li>
+</ul>
+</li>
+</ol>
+<h3 id="achieved-results">Achieved Results</h3>
+<p>The velocity ramping system provides:</p>
+<p>Linear Velocity Ramping Performance:
+<img src="https://raw.githubusercontent.com/Onizuka09/OdometryRobot/main/Imgs/pid_pos_100.png" alt="psotion_control"></p>
+<p>Angular Velocity Ramping Performance:
+<img src="https://raw.githubusercontent.com/Onizuka09/OdometryRobot/main/Imgs/best_angle_control.png" alt="angle_control"></p>
+<ul>
+<li>Smooth acceleration from rest to target velocity</li>
+<li>Controlled deceleration when approaching target positions</li>
+<li>Elimination of velocity spikes that could destabilize the control system</li>
+<li>Consistent performance across both linear and angular motion</li>
+</ul>
+<blockquote>
+<p>for visualization i used MCUViewer <a href="http://github.com/klonyyy/MCUViewer">link</a></p>
+</blockquote>
+<hr>
+<h2 id="pinout">Pinout</h2>
+<h3 id="led">LED</h3>
+<ul>
+<li>Internal LED: <strong>PA5</strong></li>
+</ul>
+<h3 id="h-bridge-motor-driver-tb6612fng">H-Bridge (Motor Driver) TB6612FNG</h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Pin</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AIN1</td>
+<td>PB3 (D3)</td>
+<td>Motor direction</td>
+</tr>
+<tr>
+<td>AIN2</td>
+<td>PB5 (D4)</td>
+<td>Motor direction</td>
+</tr>
+<tr>
+<td>BIN1</td>
+<td>PB4 (D5)</td>
+<td>Motor direction</td>
+</tr>
+<tr>
+<td>BIN2</td>
+<td>PB1 (A3)</td>
+<td>Motor direction</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Enable</th>
+<th>Pin</th>
+<th>Timer</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PWMA (Left Motor)</td>
+<td>PC1</td>
+<td>TIM15_CH1 (PWM)</td>
+</tr>
+<tr>
+<td>PWMB (Right Motor)</td>
+<td>PC2</td>
+<td>TIM15_CH2 (PWM)</td>
+</tr>
+</tbody></table>
+<ul>
+<li>Standby pin shoud be enabled </li>
+<li>VM: main power (4.5 , 13.5V ) </li>
+<li>VCC: power for the internal logic circuiuts (2.7 , 5V ) mainly 5V</li>
+</ul>
+<blockquote>
+<p>Current PWM frequency configuration is 10Khz </p>
+</blockquote>
+<hr>
+<h3 id="encoders">Encoders</h3>
+<h4 id="left-encoder">Left Encoder</h4>
+<ul>
+<li>OUTB: <strong>PA8 (D7)</strong> – TIM1_CH1 (Encoder mode)</li>
+<li>OUTB: <strong>PA9 (D8)</strong> – TIM1_CH2 (Encoder mode)</li>
+</ul>
+<h4 id="right-encoder">Right Encoder</h4>
+<ul>
+<li>OUTA: <strong>PC7 (D9)</strong> – TIM3_CH2 (Encoder mode)</li>
+<li>OUTA: <strong>PC6</strong> – TIM3_CH1 (Encoder mode)</li>
+</ul>
+<hr>
+<h3 id="uart-communication">UART Communication</h3>
+<h4 id="uart3-esp32-communication">UART3 (ESP32 Communication)</h4>
+<ul>
+<li>TX: <strong>PB8</strong></li>
+<li>RX: <strong>PB9</strong></li>
+</ul>
+<h4 id="uart2">UART2</h4>
+<ul>
+<li>TX: <strong>PA2</strong></li>
+<li>RX: <strong>PA3</strong></li>
+</ul>
+<hr>
+<h2 id="encoder-wiring">Encoder Wiring</h2>
+<table>
+<thead>
+<tr>
+<th>Wire Color</th>
+<th>Signal</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Red</td>
+<td>Motor +</td>
+</tr>
+<tr>
+<td>Black</td>
+<td>Motor −</td>
+</tr>
+<tr>
+<td>Green</td>
+<td>GND</td>
+</tr>
+<tr>
+<td>Blue</td>
+<td>Vcc</td>
+</tr>
+<tr>
+<td>Yellow</td>
+<td>OUTA</td>
+</tr>
+<tr>
+<td>White</td>
+<td>OUTB</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="pinouts">Pinouts</h2>
+<p><img src="https://raw.githubusercontent.com/Onizuka09/OdometryRobot/main/Imgs/pinouts_STM32G0.png" alt="STM32G070 NUCLEO Pinout"></p>
+<p><img src="https://raw.githubusercontent.com/Onizuka09/OdometryRobot/main/Imgs/tb661fng_pinouts.png" alt="tb6612FNG"></p>
+</div>
+</article>
+</main>
+</div>
+<footer>© 2026 Moktar SELLAMI · <a href="https://github.com/Onizuka09">GitHub</a></footer>
+<script src="../../js/sidebar.js"></script>
+</body>
+</html>

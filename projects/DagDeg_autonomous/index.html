@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DagDeg_autonomous – Moktar SELLAMI</title>
+  <meta name="description" content="ROS2 Stack for autonomous robot.">
+  <link rel="canonical" href="https://Onizuka09.github.io/portfolio/projects/DagDeg_autonomous/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="DagDeg_autonomous">
+  <meta property="og:description" content="ROS2 Stack for autonomous robot.">
+  <meta property="og:url" content="https://Onizuka09.github.io/portfolio/projects/DagDeg_autonomous/">
+  <meta property="og:site_name" content="Moktar SELLAMI">
+  <meta name="twitter:card" content="summary">
+  <link rel="alternate" type="application/rss+xml" title="Moktar SELLAMI – Blog" href="../../feed.xml">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+
+</head>
+<body class="wide">
+<header class="site-header"><a class="logo" href="../../index.html">Moktar SELLAMI</a><nav><a href="../../index.html">Portfolio</a><a href="../../projects.html" class="active">Projects</a><a href="../../blog.html">Blog</a><a href="../../index.html#contact">Contact</a></nav></header>
+<div class="layout">
+<aside class="sidebar"><nav id="side-nav" aria-label="On this page">
+<a href="#project-overview">Project Overview</a>
+<a href="#system-architecture">System Architecture</a>
+<a href="#hardware-implementation">Hardware Implementation</a>
+<a href="#robot-fabrication">Robot Fabrication</a>
+<a href="#stm32-bare-metal-development">STM32 Bare-Metal Development</a>
+<a href="#developed-drivers">Developed Drivers</a>
+<a href="#pid-control-system">PID Control System</a>
+<a href="#position-pid-controller" class="sub">Position PID Controller</a>
+<a href="#odometry-module">Odometry Module</a>
+<a href="#velocity-ramping-system">Velocity Ramping System</a>
+<a href="#traffic-light-detection-model">Traffic Light Detection Model</a>
+<a href="#model-development-process">Model Development Process</a>
+<a href="#training-and-optimization">Training and Optimization</a>
+<a href="#model-conversion-to-tensorflow-lite">Model Conversion to TensorFlow Lite</a>
+<a href="#performance-metrics">Performance Metrics</a>
+<a href="#model-architecture-highlights">Model Architecture Highlights</a>
+<a href="#ros2-implementation-on-raspberry-pi">ROS2 Implementation on Raspberry Pi</a>
+<a href="#docker-container-deployment">Docker Container Deployment</a>
+<a href="#remote-visualization-with-rviz2">Remote Visualization with RViz2</a>
+<a href="#traffic-light-detection-results">Traffic Light Detection Results</a>
+<a href="#ros2-packages">ROS2 Packages</a>
+<a href="#topics-and-communication" class="sub">Topics and Communication</a>
+<a href="#docker-container-setup">Docker Container Setup</a>
+<a href="#system-integration">System Integration</a>
+<a href="#visualization-system">Visualization System</a>
+<a href="#challenges-and-solutions">Challenges and Solutions</a>
+<a href="#the-bare-metal-integration-oversight">The Bare-Metal Integration Oversight</a>
+<a href="#real-time-and-system-stability-performance">Real-Time and System Stability Performance</a>
+<a href="#model-deployment-on-resource-constrained-hardware">Model Deployment on Resource-Constrained Hardware</a>
+<a href="#conclusion">Conclusion</a>
+<a href="#repository-links">Repository Links</a>
+</nav></aside>
+<main>
+<article>
+  <h1>DagDeg_autonomous</h1>
+  <div class="meta links"><a href="https://github.com/Onizuka09/DagDeg_autonomous">View on GitHub</a></div>
+  <div class="prose"><h1 id="project-overview">Project Overview</h1>
+<p>This project implements an autonomous robot capable of detecting and
+responding to traffic lights. The system combines embedded bare-metal
+programming on STM32 microcontroller with ROS2-based computer vision on
+Raspberry Pi, creating a complete autonomous navigation solution.</p>
+<p><img src="https://raw.githubusercontent.com/Onizuka09/DagDeg_autonomous/main/report/robot.jpg" alt="DagDeg Autonomous Robot"></p>
+<p><em>Figure: DagDeg Autonomous Robot</em></p>
+<h1 id="system-architecture">System Architecture</h1>
+<p><img src="https://raw.githubusercontent.com/Onizuka09/DagDeg_autonomous/main/report/system_arch.png" alt="System Architecture Diagram"></p>
+<p><em>Figure: System Architecture Diagram</em></p>
+<p>The system consists of three main components:</p>
+<ul>
+<li><p><strong>STM32 Microcontroller</strong>: Handles low-level motor control, PID
+controllers, and odometry</p>
+</li>
+<li><p><strong>Raspberry Pi</strong>: Runs ROS2 in Docker container with computer vision
+pipeline</p>
+</li>
+<li><p><strong>Laptop</strong>: For visualization using RViz and system monitoring via
+local network</p>
+</li>
+</ul>
+<h1 id="hardware-implementation">Hardware Implementation</h1>
+<p><img src="https://raw.githubusercontent.com/Onizuka09/DagDeg_autonomous/main/report/hardware.jpg" alt="Hardware Overview"></p>
+<p><em>Figure: Hardware Overview</em></p>
+<h2 id="robot-fabrication">Robot Fabrication</h2>
+<ul>
+<li><p>Custom chassis design and assembly</p>
+</li>
+<li><p>Motor and wheel integration</p>
+</li>
+<li><p>Power distribution system</p>
+</li>
+<li><p>Camera mounting and positioning</p>
+</li>
+<li><p>STM32 microcontroller integration</p>
+</li>
+</ul>
+<h1 id="stm32-bare-metal-development">STM32 Bare-Metal Development</h1>
+<p>The low-level firmware was developed using a bare-metal approach to
+achieve maximum timing precision. While this allowed for highly
+efficient PID loops, it presented a significant challenge for ROS2
+integration. The lack of an abstraction layer and an RTOS meant that
+<code>micro-ROS</code>—which requires specific DMA and task-scheduling
+capabilities—could not be utilized. Instead, a custom communication
+protocol was developed.</p>
+<h2 id="developed-drivers">Developed Drivers</h2>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>Driver</strong></th>
+<th align="left"><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Motor Encoders</td>
+<td align="left">Quadrature encoder interface for position tracking</td>
+</tr>
+<tr>
+<td align="left">UART Communication</td>
+<td align="left">Serial communication with Raspberry Pi</td>
+</tr>
+<tr>
+<td align="left">Clock/System Configuration</td>
+<td align="left">Low-level system initialization</td>
+</tr>
+<tr>
+<td align="left">PWM Motor Control</td>
+<td align="left">Precise motor speed control</td>
+</tr>
+</tbody></table>
+<p>STM32 Bare-Metal Drivers</p>
+<h2 id="pid-control-system">PID Control System</h2>
+<h3 id="position-pid-controller">Position PID Controller</h3>
+<p>The robot utilizes a <strong>dual-cascaded PID architecture</strong>, featuring
+separate loops for position and angular control:</p>
+<ul>
+<li><p><strong>Position Control Cascade</strong>: The outer loop controls the absolute
+target position (distance), while the inner loop regulates the linear
+velocity to ensure smooth movement.</p>
+</li>
+<li><p><strong>Angular Control Cascade</strong>: Similar to position control, this manages
+the robot’s orientation, where the outer loop maintains the heading
+angle and the inner loop regulates angular velocity to minimize
+oscillations during turns.</p>
+</li>
+</ul>
+<h2 id="odometry-module">Odometry Module</h2>
+<ul>
+<li><p>Velocity measurement (linear and angular)</p>
+</li>
+<li><p>Position tracking (x, y coordinates)</p>
+</li>
+<li><p>Angle calculation (radians and degrees)</p>
+</li>
+<li><p>Distance traveled computation</p>
+</li>
+</ul>
+<h2 id="velocity-ramping-system">Velocity Ramping System</h2>
+<p>A critical aspect of motion control is the implementation of velocity
+ramping for both linear and angular velocities. This system ensures
+smooth acceleration and deceleration, which is essential for several
+reasons:</p>
+<ul>
+<li><p><strong>Prevents Wheel Slipping</strong>: Sudden acceleration changes can cause
+wheels to lose traction, especially on smooth surfaces</p>
+</li>
+<li><p><strong>Reduces Mechanical Stress</strong>: Gradual velocity changes minimize
+stress on motors, gears, and mechanical components</p>
+</li>
+<li><p><strong>Improves Energy Efficiency</strong>: Smooth acceleration profiles consume
+less power than jerky movements</p>
+</li>
+<li><p><strong>Enhances System Stability</strong>: Prevents overshoot and oscillations in
+the control system</p>
+</li>
+<li><p><strong>Increases Position Accuracy</strong>: Smooth velocity transitions lead to
+more precise position control</p>
+</li>
+</ul>
+<p>The ramping system was implemented for both linear velocity (<code>odo.v</code>)
+and angular velocity (<code>odo.w</code>) using a two-stage approach:</p>
+<p>1. <strong>Ramp-Limited Setpoint</strong>: A gradually increasing maximum velocity
+limit that prevents sudden jumps</p>
+<p>2. <strong>Target Capping</strong>: Ensures the commanded velocity never exceeds
+physical or safety limits</p>
+<p><img src="https://raw.githubusercontent.com/Onizuka09/DagDeg_autonomous/main/report/pid_pos_100.png" alt="Linear Velocity Ramping Performance"></p>
+<p><em>Figure: Linear Velocity Ramping Performance</em>
+<img src="https://raw.githubusercontent.com/Onizuka09/DagDeg_autonomous/main/report/best_angle_control.png" alt="Angular Velocity Ramping Performance"></p>
+<p><em>Figure: Angular Velocity Ramping Performance</em>
+<em>Figure: Velocity Ramping System Performance</em></p>
+<p>As shown in Figure
+<a href="#fig:ramping_performance" data-reference-type="ref"
+data-reference="fig:ramping_performance">6</a>, the ramping system
+successfully achieves:</p>
+<ul>
+<li><p>Smooth acceleration from rest to target velocity</p>
+</li>
+<li><p>Controlled deceleration when approaching target positions</p>
+</li>
+<li><p>Elimination of velocity spikes that could destabilize the system</p>
+</li>
+<li><p>Consistent performance across both linear and angular motion</p>
+</li>
+</ul>
+<h1 id="traffic-light-detection-model">Traffic Light Detection Model</h1>
+<h2 id="model-development-process">Model Development Process</h2>
+<p>The traffic light detection model was developed using Google Colab,
+leveraging the following workflow:</p>
+<ul>
+<li><p><strong>Platform</strong>: Google Colab with GPU acceleration</p>
+</li>
+<li><p><strong>Notebook</strong>: Available at
+<a href="https://colab.research.google.com/drive/1lxwcOyEtk-aGk_w2Za_TbaYP-JJjzC9H">https://colab.research.google.com/drive/1lxwcOyEtk-aGk_w2Za_TbaYP-JJjzC9H</a></p>
+</li>
+<li><p><strong>Model Architecture</strong>: YOLOv8n (nano variant) for optimal
+speed-accuracy tradeoff</p>
+</li>
+<li><p><strong>Dataset</strong>: RoboFlow traffic light dataset with labeled images</p>
+</li>
+</ul>
+<h2 id="training-and-optimization">Training and Optimization</h2>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>Parameter</strong></th>
+<th align="center"><strong>Value</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Input Resolution</td>
+<td align="center">640×640 pixels</td>
+</tr>
+<tr>
+<td align="left">Batch Size</td>
+<td align="center">16</td>
+</tr>
+<tr>
+<td align="left">Epochs</td>
+<td align="center">100</td>
+</tr>
+<tr>
+<td align="left">Learning Rate</td>
+<td align="center">0.01</td>
+</tr>
+<tr>
+<td align="left">Optimizer</td>
+<td align="center">SGD with momentum</td>
+</tr>
+<tr>
+<td align="left">Validation Split</td>
+<td align="center">20%</td>
+</tr>
+</tbody></table>
+<p>Model Training Parameters</p>
+<h2 id="model-conversion-to-tensorflow-lite">Model Conversion to TensorFlow Lite</h2>
+<p>To deploy the model on Raspberry Pi with limited computational
+resources, the trained YOLOv8 model was converted to TensorFlow Lite
+format:</p>
+<ul>
+<li><p><strong>Conversion Method</strong>: Direct conversion from PyTorch to TFLite</p>
+</li>
+<li><p><strong>Optimizations</strong>: FP16 quantization for reduced model size</p>
+</li>
+<li><p><strong>Final Model Size</strong>:  7 MB (compressed from original 12 MB)</p>
+</li>
+<li><p><strong>Inference Speed</strong>:  50 ms per frame on Raspberry Pi 4</p>
+</li>
+</ul>
+<h2 id="performance-metrics">Performance Metrics</h2>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>Metric</strong></th>
+<th align="center"><strong>Value</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><a href="mailto:mAP@0.5">mAP@0.5</a></td>
+<td align="center">0.72</td>
+</tr>
+<tr>
+<td align="left">Precision</td>
+<td align="center">0.75</td>
+</tr>
+<tr>
+<td align="left">Recall</td>
+<td align="center">0.68</td>
+</tr>
+<tr>
+<td align="left">F1-Score</td>
+<td align="center">0.71</td>
+</tr>
+<tr>
+<td align="left">Inference Speed (RPi)</td>
+<td align="center">20 FPS</td>
+</tr>
+</tbody></table>
+<p>Model Performance Metrics</p>
+<h2 id="model-architecture-highlights">Model Architecture Highlights</h2>
+<p>The YOLOv8n architecture provides an excellent balance for embedded
+deployment:</p>
+<ul>
+<li><p><strong>Efficient Backbone</strong>: CSPDarknet for feature extraction</p>
+</li>
+<li><p><strong>Path Aggregation Network</strong>: Enhanced feature fusion</p>
+</li>
+<li><p><strong>Anchor-Free Detection</strong>: Simplified output representation</p>
+</li>
+<li><p><strong>Task-Specific Heads</strong>: Optimized for object detection</p>
+</li>
+</ul>
+<h1 id="ros2-implementation-on-raspberry-pi">ROS2 Implementation on Raspberry Pi</h1>
+<h2 id="docker-container-deployment">Docker Container Deployment</h2>
+<p>The ROS2 ecosystem was deployed on Raspberry Pi 4 using Docker
+containers, enabling consistent development environments and simplified
+dependency management.</p>
+<p><img src="https://raw.githubusercontent.com/Onizuka09/DagDeg_autonomous/main/report/ros2_pic/1.png" alt="SSH connection to Raspberry Pi with Docker container execution showing ROS2 nodes: camera_raw and tflite_traffic_light_detector successfully running with all topics published including /traffic_light/detections"></p>
+<p><em>Figure: SSH connection to Raspberry Pi with Docker container execution showing ROS2 nodes: camera_raw and tflite_traffic_light_detector successfully running with all topics published including /traffic_light/detections</em></p>
+<p>As shown in Figure <a href="#fig:ros2_ssh" data-reference-type="ref"
+data-reference="fig:ros2_ssh">7</a>, the system demonstrates:</p>
+<ul>
+<li><p>SSH connection to Raspberry Pi from development laptop</p>
+</li>
+<li><p>Docker container running ROS2 Humble distribution</p>
+</li>
+<li><p>Successful launch of all required nodes</p>
+</li>
+<li><p><code>camera_raw</code> node publishing camera feed</p>
+</li>
+<li><p><code>tflite_traffic_light_detector</code> node performing real-time inference</p>
+</li>
+<li><p><code>/traffic_light/detections</code> topic active with detection information</p>
+</li>
+</ul>
+<h2 id="remote-visualization-with-rviz2">Remote Visualization with RViz2</h2>
+<p>The system supports remote visualization through RViz2 running on a
+laptop connected via local WiFi network.</p>
+<p><img src="https://raw.githubusercontent.com/Onizuka09/DagDeg_autonomous/main/report/ros2_pic/2.png" alt="RViz2 subscribing to /camera/image_raw topic showing live camera feed"></p>
+<p><em>Figure: RViz2 subscribing to /camera/image_raw topic showing live camera feed</em>
+<img src="https://raw.githubusercontent.com/Onizuka09/DagDeg_autonomous/main/report/ros2_pic/3.png" alt="RViz2 subscribing to /traffic_light/image_annotated topic with visualization settings"></p>
+<p><em>Figure: RViz2 subscribing to /traffic_light/image_annotated topic with visualization settings</em>
+<em>Figure: RViz2 remote visualization from laptop</em></p>
+<p>Figures <a href="#fig:rviz_raw" data-reference-type="ref"
+data-reference="fig:rviz_raw">8</a> and
+<a href="#fig:rviz_annotated" data-reference-type="ref"
+data-reference="fig:rviz_annotated">9</a> show the remote visualization
+capabilities:</p>
+<ul>
+<li><p>Real-time camera feed visualization via <code>/camera/image_raw</code></p>
+</li>
+<li><p>Annotated detection visualization via <code>/traffic_light/image_annotated</code></p>
+</li>
+<li><p>Configurable display parameters in RViz2 interface</p>
+</li>
+<li><p>Low-latency visualization over local WiFi network</p>
+</li>
+</ul>
+<h2 id="traffic-light-detection-results">Traffic Light Detection Results</h2>
+<p><img src="https://raw.githubusercontent.com/Onizuka09/DagDeg_autonomous/main/report/ros2_pic/4.png" alt="Successful red traffic light detection with bounding box annotation and topic configuration showing subscription to /traffic_light/image_annotated"></p>
+<p><em>Figure: Successful red traffic light detection with bounding box annotation and topic configuration showing subscription to /traffic_light/image_annotated</em></p>
+<p>Figure <a href="#fig:detection_result" data-reference-type="ref"
+data-reference="fig:detection_result">11</a> demonstrates the successful
+detection capabilities:</p>
+<ul>
+<li><p>Red traffic light accurately detected with bounding box</p>
+</li>
+<li><p>Annotation showing confidence score and class label</p>
+</li>
+<li><p>ROS topic configuration for visualization</p>
+</li>
+<li><p>Real-time detection at approximately 20 FPS on Raspberry Pi</p>
+</li>
+</ul>
+<h2 id="ros2-packages">ROS2 Packages</h2>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>Package</strong></th>
+<th align="left"><strong>Functionality</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">camera_capture</td>
+<td align="left">Publishes raw camera images from Raspberry Pi camera</td>
+</tr>
+<tr>
+<td align="left">vision_perception</td>
+<td align="left">Traffic light detection and annotation pipeline</td>
+</tr>
+<tr>
+<td align="left">traffic_light_node</td>
+<td align="left">Main detection node using TensorFlow Lite</td>
+</tr>
+</tbody></table>
+<p>ROS2 Package Structure</p>
+<h3 id="topics-and-communication">Topics and Communication</h3>
+<ul>
+<li><p><code>/camera/image_raw</code>: Raw camera feed from Raspberry Pi camera module</p>
+</li>
+<li><p><code>/traffic_light/node/image_annotated</code>: Annotated detection images with
+bounding boxes</p>
+</li>
+<li><p><code>/traffic_light/detections</code>: Detection data including class,
+confidence, and coordinates</p>
+</li>
+<li><p><code>/position_cmd</code>: Position commands to STM32 via UART bridge</p>
+</li>
+<li><p><code>/angular_cmd</code>: Angular commands to STM32 via UART bridge</p>
+</li>
+</ul>
+<h2 id="docker-container-setup">Docker Container Setup</h2>
+<ul>
+<li><p>Custom Docker image supporting ROS2 Humble with ARM64 architecture</p>
+</li>
+<li><p>TensorFlow Lite runtime integration for model inference</p>
+</li>
+<li><p>OpenCV for image processing and camera interface</p>
+</li>
+<li><p>Complete ROS2 workspace with all dependencies containerized</p>
+</li>
+<li><p>Network configuration for remote visualization via RViz2</p>
+</li>
+</ul>
+<h1 id="system-integration">System Integration</h1>
+<h2 id="visualization-system">Visualization System</h2>
+<ul>
+<li><p>RViz2 for ROS2 visualization over local WiFi network</p>
+</li>
+<li><p>Real-time camera feed display with configurable parameters</p>
+</li>
+<li><p>Detection bounding box visualization with class labels</p>
+</li>
+<li><p>System status monitoring including topic activity and frame rates</p>
+</li>
+<li><p>Remote access from any device on the local network</p>
+</li>
+</ul>
+<h1 id="challenges-and-solutions">Challenges and Solutions</h1>
+<h2 id="the-bare-metal-integration-oversight">The Bare-Metal Integration Oversight</h2>
+<p>Developing the STM32 firmware bare-metal was an oversight regarding the
+requirements of the ROS2 ecosystem. <code>micro-ROS</code> requires an RTOS and
+complex DMA configurations that are difficult to implement from scratch
+in bare-metal C. The solution involved creating a custom UART
+communication protocol between the STM32 and Raspberry Pi.</p>
+<h2 id="real-time-and-system-stability-performance">Real-Time and System Stability Performance</h2>
+<ul>
+<li><p><strong>Challenge</strong>: Ensuring real-time PID control on bare-metal STM32</p>
+</li>
+<li><p><strong>Solution</strong>: Optimized interrupt handling, efficient algorithms, and
+velocity ramping system</p>
+</li>
+</ul>
+<h2 id="model-deployment-on-resource-constrained-hardware">Model Deployment on Resource-Constrained Hardware</h2>
+<ul>
+<li><p><strong>Challenge</strong>: Limited computational resources on Raspberry Pi for
+real-time inference</p>
+</li>
+<li><p><strong>Solution</strong>: Model quantization to TensorFlow Lite format, efficient
+memory usage, and optimized pipeline</p>
+</li>
+</ul>
+<h1 id="conclusion">Conclusion</h1>
+<p>This project successfully demonstrates a complete autonomous system
+integrating:</p>
+<ul>
+<li><p>Bare-metal embedded programming on STM32 with sophisticated velocity
+ramping</p>
+</li>
+<li><p>Advanced PID control with smooth motion profiles</p>
+</li>
+<li><p>Custom-trained YOLOv8 model for traffic light detection with 72% mAP
+accuracy</p>
+</li>
+<li><p>Efficient deployment using TensorFlow Lite on embedded Raspberry Pi
+hardware</p>
+</li>
+<li><p>ROS2-based system architecture with Docker containerization</p>
+</li>
+<li><p>Remote visualization via RViz2 over local WiFi network</p>
+</li>
+<li><p>Successful real-time detection of traffic lights with annotated
+visualization</p>
+</li>
+</ul>
+<p>The velocity ramping system proved crucial for stable operation, while
+the custom traffic light detection model achieved sufficient accuracy
+for reliable real-world performance. The Docker-based ROS2 deployment on
+Raspberry Pi enabled consistent development and deployment, while remote
+RViz2 visualization allowed for convenient system monitoring. The
+integration of these components creates a robust autonomous platform
+suitable for various navigation applications.</p>
+<h1 id="repository-links">Repository Links</h1>
+<ul>
+<li><p><strong>Odometry and STM32 Code</strong>:
+<a href="https://github.com/Onizuka09/OdometryRobot">https://github.com/Onizuka09/OdometryRobot</a></p>
+</li>
+<li><p><strong>ROS2 and AI Implementation</strong>:
+<a href="https://github.com/Onizuka09/DagDeg_autonomous">https://github.com/Onizuka09/DagDeg_autonomous</a></p>
+</li>
+<li><p><strong>Model Training Notebook</strong>:
+<a href="https://colab.research.google.com/drive/1lxwcOyEtk-aGk_w2Za_TbaYP-JJjzC9H">https://colab.research.google.com/drive/1lxwcOyEtk-aGk_w2Za_TbaYP-JJjzC9H</a></p>
+</li>
+</ul>
+</div>
+</article>
+</main>
+</div>
+<footer>© 2026 Moktar SELLAMI · <a href="https://github.com/Onizuka09">GitHub</a></footer>
+<script src="../../js/sidebar.js"></script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zetta-Protocol – Moktar SELLAMI</title>
+  <meta name="description" content="lightweight, transport-agnostic packet protocol designed for embedded systems.">
+  <link rel="canonical" href="https://Onizuka09.github.io/portfolio/projects/Zetta-Protocol/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Zetta-Protocol">
+  <meta property="og:description" content="lightweight, transport-agnostic packet protocol designed for embedded systems.">
+  <meta property="og:url" content="https://Onizuka09.github.io/portfolio/projects/Zetta-Protocol/">
+  <meta property="og:site_name" content="Moktar SELLAMI">
+  <meta name="twitter:card" content="summary">
+  <link rel="alternate" type="application/rss+xml" title="Moktar SELLAMI – Blog" href="../../feed.xml">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+
+</head>
+<body class="wide">
+<header class="site-header"><a class="logo" href="../../index.html">Moktar SELLAMI</a><nav><a href="../../index.html">Portfolio</a><a href="../../projects.html" class="active">Projects</a><a href="../../blog.html">Blog</a><a href="../../index.html#contact">Contact</a></nav></header>
+<div class="layout">
+<aside class="sidebar"><nav id="side-nav" aria-label="On this page">
+<a href="#features">Features</a>
+<a href="#frame-format">Frame Format</a>
+<a href="#packet-types">Packet Types</a>
+<a href="#usage">Usage</a>
+<a href="#using-c-stm32" class="sub">Using C (STM32)</a>
+<a href="#python" class="sub">Python</a>
+</nav></aside>
+<main>
+<article>
+  <h1>Zetta-Protocol</h1>
+  <div class="meta links"><a href="https://github.com/Onizuka09/Zetta-Protocol">View on GitHub</a></div>
+  <div class="prose"><p><strong>Zetta</strong> is a lightweight, transport-agnostic packet protocol designed for embedded systems.</p>
+<p>It provides a simple framing format on top of any byte-oriented transport such as <strong>UART, SPI, I²C, USB CDC</strong>, or even TCP streams.<br>The protocol is implemented in <strong>C for microcontrollers</strong> and mirrored with a <strong>Python API</strong> for PC-side communication and testing.</p>
+<blockquote>
+<p>For now the library only tested with UART transport protocol and tested on STM32</p>
+</blockquote>
+<blockquote>
+<p>This project is currently <strong>v0.0.1</strong> and under active development.</p>
+</blockquote>
+<blockquote>
+<p>APIs and internal behavior may change.</p>
+</blockquote>
+<hr>
+<h2 id="features">Features</h2>
+<ul>
+<li>Transport independent (UART / SPI / I2C / etc.)</li>
+<li>Byte-wise RX state machine (safe for DMA &amp; ISR usage)</li>
+<li>Configurable payload size</li>
+<li>Hardware or software CRC support</li>
+<li>Minimal memory footprint</li>
+<li>Python implementation for host-side usage</li>
+<li>Designed for bare-metal and RTOS systems</li>
+</ul>
+<hr>
+<h2 id="frame-format">Frame Format</h2>
+<p>Each packet transmitted on the wire follows this format:</p>
+<pre><code class="hljs">+------------+------+-----+----------+-----+-----------+
+| START BYTE | TYPE | LEN | PAYLOAD | CRC | STOP BYTE  |
++------------+------+-----+----------+-----+-----------+
+|     0xAA   | 1B   | 1B  | 0–25 B  | 1B  | 0xBC       |
++------------+------+-----+----------+-----+-----------+</code></pre>
+<ul>
+<li><strong>START BYTE</strong>: Frame delimiter (default: <code>0xAA</code>)</li>
+<li><strong>TYPE</strong>: Packet type (PUBLISH, SUBSCRIBE, ACK, ...)</li>
+<li><strong>LEN</strong>: Payload length in bytes</li>
+<li><strong>PAYLOAD</strong>: User data</li>
+<li><strong>CRC</strong>: Integrity check (implementation-defined)</li>
+<li><strong>STOP BYTE</strong>: Frame delimiter (default: <code>0xBC</code>)</li>
+</ul>
+<h2 id="packet-types">Packet Types</h2>
+<pre><code class="hljs language-c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">enum</span> {</span>
+    MSG_ACK       = <span class="hljs-number">0</span>,
+    MSG_PUBLISH   = <span class="hljs-number">1</span>,
+    MSG_SUBSCRIBE = <span class="hljs-number">2</span>,
+} ZettaPacketType_t;</code></pre>
+<hr>
+<h2 id="usage">Usage</h2>
+<h3 id="using-c-stm32">Using C (STM32)</h3>
+<ul>
+<li>Transmitting data</li>
+</ul>
+<pre><code class="hljs language-C"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;zetta/zetta_protocol.h&quot;</span></span>
+
+<span class="hljs-comment">/* Transport bindings */</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">uart_send</span><span class="hljs-params">(<span class="hljs-type">void</span>* data, <span class="hljs-type">uint8_t</span> size)</span>
+{
+    HAL_UART_Transmit_DMA(&amp;huart2, data, size);
+}
+
+<span class="hljs-type">uint32_t</span> <span class="hljs-title function_">crc_compute</span><span class="hljs-params">(<span class="hljs-type">uint32_t</span>* data, <span class="hljs-type">uint32_t</span> size)</span>
+{
+    __HAL_CRC_DR_RESET(&amp;hcrc);
+    <span class="hljs-keyword">return</span> HAL_CRC_Calculate(&amp;hcrc, data, size);
+}
+
+<span class="hljs-comment">/* Zetta instance */</span>
+Zetta_t zetta;
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    ZettaInterface_t iface = {
+        .send = uart_send,
+        .computeCRC = crc_compute,
+    };
+
+    zetta_init(&amp;zetta, iface);
+
+    <span class="hljs-class"><span class="hljs-keyword">struct</span> {</span>
+        <span class="hljs-type">uint8_t</span> id;
+        <span class="hljs-type">float</span> value;
+    } payload = {<span class="hljs-number">1</span>, <span class="hljs-number">23.5f</span>};
+
+    zetta_send(&amp;zetta, MSG_PUBLISH, &amp;payload, <span class="hljs-keyword">sizeof</span>(payload));
+
+    <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>)
+    {
+        <span class="hljs-comment">// RX handled byte-by-byte in UART ISR</span>
+    }
+}</code></pre>
+<ul>
+<li>UART RX Callback</li>
+</ul>
+<pre><code class="hljs language-C"><span class="hljs-type">uint8_t</span> rx_byte;
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">HAL_UART_RxCpltCallback</span><span class="hljs-params">(UART_HandleTypeDef* huart)</span>
+{
+    <span class="hljs-keyword">if</span> (zetta_ParseByte(&amp;zetta, rx_byte) == ZETTA_OK)
+    {
+        <span class="hljs-type">uint8_t</span> buffer[<span class="hljs-number">32</span>];
+        Zetta_GetPayload(&amp;zetta, buffer);
+        <span class="hljs-comment">// process buffer</span>
+    }
+
+    HAL_UART_Receive_DMA(&amp;huart2, &amp;rx_byte, <span class="hljs-number">1</span>);
+}</code></pre>
+<h3 id="python">Python</h3>
+<p>Take a look at the python example </p>
+</div>
+</article>
+</main>
+</div>
+<footer>© 2026 Moktar SELLAMI · <a href="https://github.com/Onizuka09">GitHub</a></footer>
+<script src="../../js/sidebar.js"></script>
+</body>
+</html>
