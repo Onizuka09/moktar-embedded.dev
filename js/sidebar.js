@@ -2,8 +2,9 @@
 (function () {
   const links = [...document.querySelectorAll("#side-nav a")];
   const sections = links
-    .map(a => document.querySelector(a.getAttribute("href")))
+    .map(a => document.getElementById(a.getAttribute("href").slice(1)))
     .filter(Boolean);
+  if (!sections.length) return;
 
   function update() {
     let current = sections[0];

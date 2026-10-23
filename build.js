@@ -41,6 +41,7 @@ function rawToBlobDir(dir) {
 }
 
 // ---------- markdown ----------
+let seen = {};   // heading ids used so far in the current document
 marked.use({
   renderer: {
     code(code, infostring) {                       // syntax highlighting at build time
@@ -50,7 +51,9 @@ marked.use({
       return `<pre><code class="hljs${known ? " language-" + lang : ""}">${html}</code></pre>\n`;
     },
     heading(text, level, raw) {                    // ids so #links to headings work
-      const id = raw.toLowerCase().replace(/[^\w\- ]+/g, "").trim().replace(/ +/g, "-");
+      const base = raw.toLowerCase().replace(/[^\w\- ]+/g, "").trim().replace(/ +/g, "-") || "section";
+      const n = seen[base] = (seen[base] || 0) + 1;        // repeated headings get -1, -2, ...
+      const id = n === 1 ? base : `${base}-${n - 1}`;
       return `<h${level} id="${id}">${text}</h${level}>\n`;
     }
   }
@@ -62,12 +65,17 @@ function markdownToHtml(md, base) {
          .replace(/^\s*#\s+.+\r?\n/, "");                  // leading "# Title" (page shows its own)
   const isRelative = u => u && !/^([a-z][a-z0-9+.-]*:|\/\/|#)/i.test(u);
   const clean = u => u.replace(/^\.?\//, "");
-  return marked.parse(md).replace(/\b(src|href)="([^"]*)"/g, (m, attr, url) =>
+  seen = {};
+  const html = marked.parse(md).replace(/\b(src|href)="([^"]*)"/g, (m, attr, url) =>
     isRelative(url) ? `${attr}="${attr === "src" ? base.raw : base.link}${clean(url)}"` : m);
+  // table of contents for the sidebar: every h1-h3 that has an id
+  const toc = [...html.matchAll(/<h([1-3]) id="([^"]+)">([\s\S]*?)<\/h\1>/g)]
+    .map(m => ({ level: +m[1], id: m[2], text: m[3].replace(/<[^>]+>/g, "") }));
+  return { html, toc };
 }
 
 // ---------- page template ----------
-function page({ depth, title, description, urlPath, body, active, extraHead = "" }) {
+function page({ depth, title, description, urlPath, body, active, extraHead = "", toc = [] }) {
   const p = "../".repeat(depth);                  // path back to the site root
   const url = `${CONFIG.siteUrl}/${urlPath}`;
   const fullTitle = `${title} – ${CONFIG.name}`;
@@ -75,6 +83,10 @@ function page({ depth, title, description, urlPath, body, active, extraHead = ""
                ["Blog", "blog.html", "blog"], ["Contact", "index.html#contact", ""]]
     .map(([label, href, key]) =>
       `<a href="${p}${href}"${key && key === active ? ' class="active"' : ""}>${label}</a>`).join("");
+  const sidebar = toc.length > 1 ? `<aside class="sidebar"><nav id="side-nav" aria-label="On this page">
+${toc.map(t => `<a href="#${t.id}"${t.level === 3 ? ' class="sub"' : ""}>${t.text}</a>`).join("\n")}
+</nav></aside>` : "";
+  const main = `<main>\n${body}\n</main>`;
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -95,12 +107,11 @@ function page({ depth, title, description, urlPath, body, active, extraHead = ""
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
 ${extraHead}
 </head>
-<body>
+<body${sidebar ? ' class="wide"' : ""}>
 <header class="site-header"><a class="logo" href="${p}index.html">${esc(CONFIG.name)}</a><nav>${nav}</nav></header>
-<main>
-${body}
-</main>
+${sidebar ? `<div class="layout">\n${sidebar}\n${main}\n</div>` : main}
 <footer>© ${new Date().getFullYear()} ${esc(CONFIG.name)} · <a href="https://github.com/${esc(CONFIG.github)}">GitHub</a></footer>
+${sidebar ? `<script src="${p}js/sidebar.js"></script>` : ""}
 </body>
 </html>
 `;
@@ -121,19 +132,20 @@ async function buildPosts(sitemap) {
       md = fs.readFileSync(`posts/${post.slug}.md`, "utf8");
       base = { raw: "../../posts/", link: "../../posts/" };
     }
+    const { html, toc } = markdownToHtml(md, base);
     const urlPath = `blog/${post.slug}/`;
     const tags = (post.tags || []).map(t => `<span>${esc(t)}</span>`).join("");
     const ld = { "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title,
       description: post.summary, datePublished: post.date,
       author: { "@type": "Person", name: CONFIG.name }, mainEntityOfPage: `${CONFIG.siteUrl}/${urlPath}` };
     write(`${urlPath}index.html`, page({
-      depth: 2, active: "blog", urlPath, title: post.title, description: post.summary,
+      depth: 2, toc, active: "blog", urlPath, title: post.title, description: post.summary,
       extraHead: `  <script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\\u003c")}</script>`,
       body: `<article>
   <h1>${esc(post.title)}</h1>
   <div class="meta">${esc(post.date)}</div>
   <div class="tags">${tags}</div>
-  <div class="prose">${markdownToHtml(md, base)}</div>
+  <div class="prose">${html}</div>
 </article>`
     }));
     sitemap.push({ path: urlPath, date: post.date });
@@ -172,13 +184,14 @@ async function buildProjects(sitemap) {
     const links = [`<a href="https://github.com/${esc(p.repo)}">View on GitHub</a>`];
     if (p.demo) links.push(`<a href="${esc(p.demo)}">Demo</a>`);
     if (p.post) links.push(`<a href="../../blog/${esc(p.post)}/">Blog post</a>`);
+    const out = readme ? markdownToHtml(readme.md, readme) : { html: "<p>README not available.</p>", toc: [] };
     const urlPath = `projects/${name}/`;
     write(`${urlPath}index.html`, page({
-      depth: 2, active: "projects", urlPath, title, description,
+      depth: 2, toc: out.toc, active: "projects", urlPath, title, description,
       body: `<article>
   <h1>${esc(title)}</h1>
   <div class="meta links">${links.join(" ")}</div>
-  <div class="prose">${readme ? markdownToHtml(readme.md, readme) : "<p>README not available.</p>"}</div>
+  <div class="prose">${out.html}</div>
 </article>`
     }));
     sitemap.push({ path: urlPath });
