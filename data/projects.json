@@ -4,7 +4,7 @@
     "title": "BL475-SensorHub",
     "description": "A Zephyr based project on stm32BL475 to collect onboard sensor data and transmit it over mqtt to a dashboard.",
     "tags": ["stm32", "Zephyr", "IoT"],
-    "date": "2025-11-25"
+    "date": "2026-03-25"
     
   },
   {
@@ -36,7 +36,7 @@
     "title": "smart-Plug",
     "description": "An IoT solution to control a group of plugs that communicates with the gateway over ESP-NOW and a dashboard as a UI.",
     "tags": ["C++", "ESP-NOW", "ESP32"],
-    "date": "2026-04-24"
+    "date": "2023-04-24"
   },
   {
     "repo": "Onizuka09/schedular_semulator",
